@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/server"
 import { fetchInvestingEvents } from "./fetch-investing"
 import { fetchHoseEvents } from "./fetch-hose"
 import { fetchGsoEvents } from "./fetch-gso"
+import { fetchVnCalendarEvents } from "./fetch-vn-calendar"
 import type { EventSource } from "./types"
 
 export interface EventIngestResult {
@@ -58,11 +59,13 @@ export async function ingestAllEventSources(): Promise<EventIngestResult[]> {
   const now = new Date().toISOString()
 
   // Fetch all sources in parallel — each returns [] on failure
+  // fetchVnCalendarEvents is synchronous (no network), always returns data
   const [investingRaw, hoseRaw, gsoRaw] = await Promise.all([
     fetchInvestingEvents(),
     fetchHoseEvents(),
     fetchGsoEvents(),
   ])
+  const vnCalendarRaw = fetchVnCalendarEvents(90)
 
   const toRow = (ev: {
     source: string
@@ -93,6 +96,7 @@ export async function ingestAllEventSources(): Promise<EventIngestResult[]> {
     ingestSource(supabase, investingRaw.map(toRow), "investing"),
     ingestSource(supabase, hoseRaw.map(toRow), "hose"),
     ingestSource(supabase, gsoRaw.map(toRow), "gso"),
+    ingestSource(supabase, vnCalendarRaw.map(toRow), "vn_calendar"),
   ])
 
   return results

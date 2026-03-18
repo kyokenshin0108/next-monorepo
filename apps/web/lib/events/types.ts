@@ -1,4 +1,4 @@
-export type EventSource = "investing" | "hose" | "gso"
+export type EventSource = "investing" | "hose" | "gso" | "sbv" | "vn_calendar"
 export type EventImportance = "high" | "medium" | "low"
 
 export interface EconomicEvent {
