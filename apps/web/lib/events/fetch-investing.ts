@@ -14,14 +14,16 @@ interface RawInvestingEvent {
   url: string | null
 }
 
-const CURRENCY_TO_COUNTRY: Record<string, string> = {
-  USD: "Mỹ",
-  EUR: "EU",
-  CNY: "Trung Quốc",
-  JPY: "Nhật Bản",
-  GBP: "Anh",
-  VND: "Việt Nam",
-  VN: "Việt Nam",
+// Investing.com uses full underscore-separated country names in ceFlags CSS class
+const COUNTRY_NAME_MAP: Record<string, string> = {
+  United_States:  "Mỹ",
+  United_Kingdom: "Anh",
+  Germany:        "EU",        // ECB/Euro-zone events show under Germany
+  Euro_Zone:      "EU",
+  European_Union: "EU",
+  Japan:          "Nhật Bản",
+  China:          "Trung Quốc",
+  Vietnam:        "Việt Nam",
 }
 
 function mapImportance(level: string): EventImportance {
@@ -62,9 +64,10 @@ export async function fetchInvestingEvents(): Promise<RawInvestingEvent[]> {
     const dateFrom = formatDate(now)
     const dateTo = formatDate(future)
 
-    // Manually encoded form body — URLSearchParams doesn't handle duplicate keys well
+    // Country IDs on Investing.com:
+    //   5=United States | 4=Germany(EU) | 17=United Kingdom | 35=Japan | 37=China
     const body =
-      "country%5B%5D=5&country%5B%5D=4&country%5B%5D=72&country%5B%5D=25&country%5B%5D=35&country%5B%5D=12" +
+      "country%5B%5D=5&country%5B%5D=4&country%5B%5D=17&country%5B%5D=35&country%5B%5D=37" +
       "&importance%5B%5D=3&importance%5B%5D=2" +
       `&timeZone=0&dateFrom=${dateFrom}&dateTo=${dateTo}` +
       "&currentTab=custom&limit_from=0"
@@ -141,18 +144,13 @@ export async function fetchInvestingEvents(): Promise<RawInvestingEvent[]> {
       const levelRaw = extractAttr(`x ${trAttrs}`, "event_attr_level") ?? "1"
       const importance = mapImportance(levelRaw)
 
-      // Country from .ceFlags class or .flagCur text
-      let country = "Mỹ"
-      const flagMatch = trContent.match(/class="[^"]*ceFlags\s+([A-Z]{2,3})[^"]*"/)
+      // Country from .ceFlags class — Investing.com uses full names e.g. "ceFlags United_States"
+      let country: string | null = null
+      const flagMatch = trContent.match(/class="[^"]*ceFlags\s+([A-Za-z_]+)[^"]*"/)
       if (flagMatch?.[1]) {
-        country = CURRENCY_TO_COUNTRY[flagMatch[1]] ?? flagMatch[1]
-      } else {
-        const flagCurMatch = trContent.match(/<span[^>]*class="[^"]*flagCur[^"]*"[^>]*>([^<]+)</)
-        if (flagCurMatch?.[1]) {
-          const cur = flagCurMatch[1].trim()
-          country = CURRENCY_TO_COUNTRY[cur] ?? cur
-        }
+        country = COUNTRY_NAME_MAP[flagMatch[1]] ?? flagMatch[1].replace(/_/g, " ")
       }
+      if (!country) continue   // skip events with unrecognised country
 
       // Title from .event cell
       const eventCellMatch = trContent.match(/<td[^>]*class="[^"]*\bevent\b[^"]*"[^>]*>([\s\S]*?)<\/td>/)
