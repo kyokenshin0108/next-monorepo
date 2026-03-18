@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/server"
 import { fetchRssItems } from "./rss-parser"
 import { crawlArticle } from "./crawl-article"
 import { cleanText, cleanContent } from "./html-entities"
+import { classifyArticle } from "./categorize"
 import { SOURCE_CONFIGS } from "./source-configs"
 import type { NewsSource } from "./types"
 
@@ -63,12 +64,17 @@ export async function ingestAllSources(): Promise<IngestResult[]> {
           ? new Date(item.pubDate).toISOString()
           : new Date().toISOString()
 
+        const cleanTitle = cleanText(item.title)
+        const cleanSummary = item.description ? cleanText(item.description) : null
+        const cleanedContent = content ? cleanContent(content) : null
+        const category = classifyArticle(cleanTitle, cleanSummary, cleanedContent)
+
         const { error } = await supabase.from("news_articles").insert({
           source: config.id,
-          category: config.category,
-          title: cleanText(item.title),
-          summary: item.description ? cleanText(item.description) : null,
-          content: content ? cleanContent(content) : null,
+          category,
+          title: cleanTitle,
+          summary: cleanSummary,
+          content: cleanedContent,
           url: item.link,
           image_url: imageUrl,
           published_at: publishedAt,
