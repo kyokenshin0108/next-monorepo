@@ -1,0 +1,17 @@
+name: Fetch News
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"   # every 2 hours
+  workflow_dispatch:         # allow manual trigger
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call fetch-news endpoint
+        run: |
+          curl -s -X POST https://next-monorepo-nine.vercel.app/api/cron/fetch-news \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail-with-body
