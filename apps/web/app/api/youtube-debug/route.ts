@@ -36,11 +36,11 @@ export async function GET(req: NextRequest) {
   try {
     const rssRes = await fetch(RSS_URL, { cache: "no-store" })
     const xml = await rssRes.text()
-    const videoIds = [...xml.matchAll(/<yt:videoId>(.*?)<\/yt:videoId>/g)].map(m => m[1])
+    const videoIds = [...xml.matchAll(/<yt:videoId>(.*?)<\/yt:videoId>/g)].map(m => m[1] ?? "")
     const titles = [...xml.matchAll(/<title>([\s\S]*?)<\/title>/g)]
       .slice(1) // skip feed-level <title>
       .slice(0, 5)
-      .map(m => m[1].trim())
+      .map(m => (m[1] ?? "").trim())
 
     report.rss = {
       httpStatus: rssRes.status,
