@@ -6,6 +6,51 @@ import Footer from "@/components/shared/Footer"
 import type { YouTubeStatus, YouTubeVideo } from "@/app/api/youtube/route"
 import type { CalendarEvent } from "@/app/api/google-calendar/route"
 
+/** Strip hashtags and trim blank lines from a YouTube description */
+function cleanDescription(raw: string): string {
+  return raw
+    .split("\n")
+    .map((line) => line.replace(/#\S+/g, "").trimEnd())
+    .filter((line, i, arr) => {
+      // Remove lines that are now empty after hashtag removal,
+      // but preserve intentional blank lines between paragraphs
+      if (line.trim() !== "") return true
+      const prev = arr[i - 1]
+      return prev !== undefined && prev.trim() !== ""
+    })
+    .join("\n")
+    .trim()
+}
+
+function VideoDescription({ text, fallback }: { text: string; fallback: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const cleaned = text ? cleanDescription(text) : ""
+  if (!cleaned) return <p className="text-gray-700 mb-4">{fallback}</p>
+
+  const lines = cleaned.split("\n")
+  const PREVIEW_LINES = 4
+  const needsTruncation = lines.length > PREVIEW_LINES
+
+  const displayLines = expanded || !needsTruncation ? lines : lines.slice(0, PREVIEW_LINES)
+
+  return (
+    <div className="mb-4">
+      <div className="text-gray-700 whitespace-pre-line">
+        {displayLines.join("\n")}
+        {!expanded && needsTruncation && "…"}
+      </div>
+      {needsTruncation && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-1 text-sm font-medium text-primary hover:underline"
+        >
+          {expanded ? "Thu gọn" : "Xem thêm"}
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function LiveStream() {
   const [calendarView, setCalendarView] = useState("month")
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
@@ -160,7 +205,7 @@ export default function LiveStream() {
                           <span>TheStockHunters</span>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 line-clamp-3">{youtubeStatus.liveVideo.description || "Phân tích thị trường chứng khoán trực tiếp cùng TheStockHunters."}</p>
+                      <VideoDescription text={youtubeStatus.liveVideo.description} fallback="Phân tích thị trường chứng khoán trực tiếp cùng TheStockHunters." />
                     </>
                   ) : activeVideo ? (
                     <>
@@ -179,7 +224,7 @@ export default function LiveStream() {
                           <span>TheStockHunters</span>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 line-clamp-3">{activeVideo.description || "Phân tích thị trường chứng khoán cùng TheStockHunters."}</p>
+                      <VideoDescription text={activeVideo.description} fallback="Phân tích thị trường chứng khoán cùng TheStockHunters." />
                     </>
                   ) : (
                     <>
