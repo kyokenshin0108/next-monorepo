@@ -6,6 +6,7 @@ import { supabaseBrowser } from "@/lib/supabase/client"
 export default function DangKyPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null)
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -42,6 +43,18 @@ export default function DangKyPage() {
       a: "TheStockHunters cam kết bảo mật thông tin cá nhân của khách hàng. Chúng tôi tuân thủ nghiêm ngặt các quy định về bảo vệ dữ liệu và không bao giờ chia sẻ thông tin của bạn với bên thứ ba mà không có sự đồng ý.",
     },
   ]
+
+  const handleOAuth = async (provider: "google" | "facebook") => {
+    setOauthLoading(provider)
+    const { error } = await supabaseBrowser.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) {
+      setErrorMsg(`Đăng ký ${provider === "google" ? "Google" : "Facebook"} thất bại: ${error.message}`)
+      setOauthLoading(null)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -118,6 +131,44 @@ export default function DangKyPage() {
               <div className="grid grid-cols-1 lg:grid-cols-5">
                 {/* Registration Form */}
                 <div className="lg:col-span-3 p-6 md:p-8 lg:p-10">
+                  {/* OAuth quick-register */}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth("google")}
+                      disabled={!!oauthLoading || loading}
+                      className="w-full px-4 py-3 rounded-button border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {oauthLoading === "google" ? (
+                        <i className="ri-loader-4-line animate-spin text-gray-500"></i>
+                      ) : (
+                        <i className="ri-google-fill text-[#4285F4]"></i>
+                      )}
+                      Google
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth("facebook")}
+                      disabled={!!oauthLoading || loading}
+                      className="w-full px-4 py-3 rounded-button border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {oauthLoading === "facebook" ? (
+                        <i className="ri-loader-4-line animate-spin text-gray-500"></i>
+                      ) : (
+                        <i className="ri-facebook-fill text-[#1877F2]"></i>
+                      )}
+                      Facebook
+                    </button>
+                  </div>
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-4 text-gray-500 bg-white">Hoặc đăng ký bằng email</span>
+                    </div>
+                  </div>
+
                   <form id="registration-form" onSubmit={handleSubmit}>
                     <div className="space-y-6">
                       <div>

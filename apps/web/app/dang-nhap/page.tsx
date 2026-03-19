@@ -9,13 +9,22 @@ export default function DangNhapPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({ email: "", password: "", remember: false })
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Forgot-password modal state
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState("")
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotError, setForgotError] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
   }
 
+  // ── Email / password login ────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -38,6 +47,50 @@ export default function DangNhapPage() {
     }
     router.push("/")
     router.refresh()
+  }
+
+  // ── OAuth login (Google / Facebook) ──────────────────────────────────────
+  const handleOAuth = async (provider: "google" | "facebook") => {
+    setError(null)
+    setOauthLoading(provider)
+    const { error } = await supabaseBrowser.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+    if (error) {
+      setError(`Đăng nhập ${provider === "google" ? "Google" : "Facebook"} thất bại: ${error.message}`)
+      setOauthLoading(null)
+    }
+    // On success, Supabase redirects the browser — no further action needed
+  }
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  const openForgot = () => {
+    setForgotEmail(formData.email)
+    setForgotSent(false)
+    setForgotError(null)
+    setShowForgot(true)
+  }
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setForgotError(null)
+    if (!forgotEmail.trim()) {
+      setForgotError("Vui lòng nhập địa chỉ email.")
+      return
+    }
+    setForgotLoading(true)
+    const { error } = await supabaseBrowser.auth.resetPasswordForEmail(forgotEmail.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    })
+    setForgotLoading(false)
+    if (error) {
+      setForgotError(error.message)
+      return
+    }
+    setForgotSent(true)
   }
 
   return (
@@ -64,8 +117,48 @@ export default function DangNhapPage() {
                 {/* Login Form */}
                 <div className="lg:col-span-3 p-6 md:p-8 lg:p-10">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Đăng Nhập TheStockHunters</h1>
+
+                  {/* OAuth buttons */}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth("google")}
+                      disabled={!!oauthLoading || loading}
+                      className="w-full px-4 py-3 rounded-button border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {oauthLoading === "google" ? (
+                        <i className="ri-loader-4-line animate-spin text-gray-500"></i>
+                      ) : (
+                        <i className="ri-google-fill text-[#4285F4]"></i>
+                      )}
+                      Google
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth("facebook")}
+                      disabled={!!oauthLoading || loading}
+                      className="w-full px-4 py-3 rounded-button border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {oauthLoading === "facebook" ? (
+                        <i className="ri-loader-4-line animate-spin text-gray-500"></i>
+                      ) : (
+                        <i className="ri-facebook-fill text-[#1877F2]"></i>
+                      )}
+                      Facebook
+                    </button>
+                  </div>
+
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-4 text-gray-500 bg-white">Hoặc đăng nhập bằng email</span>
+                    </div>
+                  </div>
+
                   <form id="login-form" onSubmit={handleSubmit}>
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
                         <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
                           Email <span className="text-red-500">*</span>
@@ -98,7 +191,7 @@ export default function DangNhapPage() {
                           />
                           <div
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 cursor-pointer"
                           >
                             <i className={showPassword ? "ri-eye-line" : "ri-eye-off-line"}></i>
                           </div>
@@ -119,62 +212,32 @@ export default function DangNhapPage() {
                             <span className="text-gray-700 text-sm">Ghi nhớ đăng nhập</span>
                           </label>
                         </div>
-                        <a href="#" className="text-primary text-sm font-medium hover:underline">Quên mật khẩu?</a>
+                        <button
+                          type="button"
+                          onClick={openForgot}
+                          className="text-primary text-sm font-medium hover:underline"
+                        >
+                          Quên mật khẩu?
+                        </button>
                       </div>
 
                       {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center">
-                          <i className="ri-error-warning-line mr-2 flex-shrink-0"></i>
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                          <i className="ri-error-warning-line flex-shrink-0"></i>
                           {error}
                         </div>
                       )}
 
-                      <div>
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="w-full bg-primary text-white px-6 py-3 rounded-button font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center justify-center disabled:opacity-70"
-                        >
-                          <div className="w-5 h-5 flex items-center justify-center mr-2">
-                            <i className={loading ? "ri-loader-4-line animate-spin" : "ri-login-circle-line"}></i>
-                          </div>
-                          {loading ? "Đang đăng nhập..." : "Đăng Nhập"}
-                        </button>
-                      </div>
+                      <button
+                        type="submit"
+                        disabled={loading || !!oauthLoading}
+                        className="w-full bg-primary text-white px-6 py-3 rounded-button font-medium hover:bg-primary/90 transition flex items-center justify-center gap-2 disabled:opacity-70"
+                      >
+                        <i className={loading ? "ri-loader-4-line animate-spin" : "ri-login-circle-line"}></i>
+                        {loading ? "Đang đăng nhập..." : "Đăng Nhập"}
+                      </button>
 
-                      <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-4 text-gray-500 bg-white">Hoặc đăng nhập với</span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full px-6 py-3 rounded-button border border-gray-300 bg-white text-gray-400 font-medium transition whitespace-nowrap flex items-center justify-center cursor-not-allowed"
-                          title="Đang phát triển"
-                        >
-                          <div className="w-5 h-5 flex items-center justify-center mr-2">
-                            <i className="ri-google-fill text-[#4285F4]"></i>
-                          </div>
-                          Google
-                        </button>
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full px-6 py-3 rounded-button border border-gray-300 bg-white text-gray-400 font-medium transition whitespace-nowrap flex items-center justify-center cursor-not-allowed"
-                          title="Đang phát triển"
-                        >
-                          <div className="w-5 h-5 flex items-center justify-center mr-2">
-                            <i className="ri-facebook-fill text-[#1877F2]"></i>
-                          </div>
-                          Facebook
-                        </button>
-                      </div>
-                      <div className="text-center mt-4">
+                      <div className="text-center">
                         <p className="text-gray-600">Chưa có tài khoản? <Link href="/dang-ky" className="text-primary font-medium hover:underline">Đăng ký ngay</Link></p>
                       </div>
                     </div>
@@ -216,10 +279,8 @@ export default function DangNhapPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-white mb-4">Sẵn sàng bắt đầu hành trình đầu tư của bạn?</h2>
             <p className="text-xl text-blue-100 mb-8">Đăng nhập ngay hôm nay để tiếp tục hành trình đầu tư cùng TheStockHunters.</p>
-            <a href="#login-form" className="bg-white text-primary px-8 py-4 rounded-button font-medium hover:bg-gray-100 transition whitespace-nowrap inline-flex items-center">
-              <div className="w-5 h-5 flex items-center justify-center mr-2">
-                <i className="ri-login-circle-line"></i>
-              </div>
+            <a href="#login-form" className="bg-white text-primary px-8 py-4 rounded-button font-medium hover:bg-gray-100 transition whitespace-nowrap inline-flex items-center gap-2">
+              <i className="ri-login-circle-line"></i>
               Đăng Nhập Ngay
             </a>
           </div>
@@ -242,6 +303,88 @@ export default function DangNhapPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── Forgot Password Modal ─────────────────────────────────────────── */}
+      {showForgot && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Quên mật khẩu</h3>
+              <button
+                onClick={() => setShowForgot(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <i className="ri-close-line text-xl"></i>
+              </button>
+            </div>
+
+            {forgotSent ? (
+              <div className="text-center py-4">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-mail-check-line text-green-600 text-2xl"></i>
+                </div>
+                <p className="font-medium text-gray-900 mb-1">Email đã được gửi!</p>
+                <p className="text-sm text-gray-500">
+                  Kiểm tra hộp thư <span className="font-medium text-gray-700">{forgotEmail}</span> và nhấn vào link để đặt lại mật khẩu.
+                </p>
+                <p className="text-xs text-gray-400 mt-3">Không thấy email? Kiểm tra thư mục Spam.</p>
+                <button
+                  onClick={() => setShowForgot(false)}
+                  className="mt-5 w-full bg-primary text-white py-2.5 rounded-button font-medium hover:bg-primary/90 transition"
+                >
+                  Đóng
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Nhập email đăng ký của bạn. Chúng tôi sẽ gửi link để đặt lại mật khẩu.
+                </p>
+                <div>
+                  <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="forgot-email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-sm"
+                    placeholder="email@example.com"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                {forgotError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 rounded-lg text-sm flex items-center gap-2">
+                    <i className="ri-error-warning-line flex-shrink-0"></i>
+                    {forgotError}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgot(false)}
+                    className="flex-1 py-2.5 border border-gray-300 rounded-button text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="flex-1 py-2.5 bg-primary text-white rounded-button text-sm font-medium hover:bg-primary/90 transition flex items-center justify-center gap-2 disabled:opacity-70"
+                  >
+                    {forgotLoading && <i className="ri-loader-4-line animate-spin"></i>}
+                    {forgotLoading ? "Đang gửi..." : "Gửi email"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
