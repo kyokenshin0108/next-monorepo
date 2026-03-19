@@ -17,7 +17,7 @@ export default function LiveStream() {
   const [calendarView, setCalendarView] = useState("month")
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
   const [showFilterMenu, setShowFilterMenu] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 5, 8))
+  const [currentDate, setCurrentDate] = useState(() => new Date())
   const [youtubeStatus, setYoutubeStatus] = useState<YouTubeStatus | null>(null)
   const [youtubeLoading, setYoutubeLoading] = useState(true)
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
