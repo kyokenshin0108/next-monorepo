@@ -66,7 +66,7 @@ function decodeXMLEntities(str: string): string {
  */
 async function getVideosFromRSS(limit = 8): Promise<YouTubeVideo[]> {
   try {
-    const res = await fetch(RSS_URL, { next: { revalidate: 300 } })
+    const res = await fetch(RSS_URL, { cache: "no-store" })
     if (!res.ok) {
       console.error(`[YouTube] RSS fetch failed: HTTP ${res.status}`)
       return []
@@ -130,7 +130,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=contentDetails&playlistId=${uploadsPlaylistId}&maxResults=1&key=${API_KEY}`,
-    { next: { revalidate: 300 } }
+    { cache: "no-store" }
   )
   const playlistData = await playlistRes.json()
 
@@ -145,7 +145,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const videoRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,liveStreamingDetails&id=${latestVideoId}&key=${API_KEY}`,
-    { next: { revalidate: 300 } }
+    { cache: "no-store" }
   )
   const videoData = await videoRes.json()
 
@@ -188,7 +188,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`,
-    { next: { revalidate: 300 } }
+    { cache: "no-store" }
   )
   const playlistData = await playlistRes.json()
 
@@ -208,7 +208,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const detailsRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids.join(",")}&key=${API_KEY}`,
-    { next: { revalidate: 300 } }
+    { cache: "no-store" }
   )
   const detailsData = await detailsRes.json()
 
@@ -331,7 +331,12 @@ export async function GET() {
     _source: "rss",
   }
 
-  await writeCache(result)
-  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, cached in Supabase`)
+  // Only cache if RSS returned actual videos — don't persist an empty failure
+  if (rssVideos.length > 0) {
+    await writeCache(result)
+    console.log(`[YouTube] RSS source — ${rssVideos.length} videos, cached in Supabase`)
+  } else {
+    console.warn("[YouTube] RSS returned 0 videos — skipping Supabase write")
+  }
   return NextResponse.json(result)
 }
