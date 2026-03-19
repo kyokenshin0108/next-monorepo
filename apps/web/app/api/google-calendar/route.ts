@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
   const calendarId = process.env.GOOGLE_CALENDAR_ID
   const apiKey = process.env.YOUTUBE_API_KEY // same Google Cloud API key
 
-  if (!calendarId || !apiKey || calendarId.startsWith("your_") || calendarId.startsWith("@REPLACE")) {
-    return NextResponse.json({ events: [] })
+  if (!calendarId || !apiKey) {
+    return NextResponse.json({ events: [], error: "Missing GOOGLE_CALENDAR_ID or YOUTUBE_API_KEY" })
   }
 
   const timeMin = new Date(year, month, 1).toISOString()
@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
     )
 
     if (!res.ok) {
-      console.error("Google Calendar API error:", res.status, await res.text())
-      return NextResponse.json({ events: [] })
+      const errText = await res.text()
+      console.error("Google Calendar API error:", res.status, errText)
+      return NextResponse.json({ events: [], error: `Calendar API ${res.status}: ${errText}` })
     }
 
     const data = await res.json()

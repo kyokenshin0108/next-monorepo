@@ -6,7 +6,7 @@
   "env": {
     "YOUTUBE_API_KEY": "AIzaSyCukLCpHPTbYXnZ2Y227w5qrZdYPCfvS8s",
     "YOUTUBE_CHANNEL_ID": "UCg1a2KaW4f7c0ThU3Dbho0A",
-    "GOOGLE_CALENDAR_ID": "@REPLACE_WITH_YOUR_CALENDAR_ID"
+    "GOOGLE_CALENDAR_ID": "stock.hunter.info@gmail.com"
   },
   "crons": [
     {
