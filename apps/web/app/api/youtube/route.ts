@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server"
 
+// Tell Next.js to cache this Route Handler at the edge for 5 minutes.
+// Individual fetches must NOT use cache:"no-store" or Next.js overrides this.
+export const revalidate = 300
+
 const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCg1a2KaW4f7c0ThU3Dbho0A"
 const API_KEY = process.env.YOUTUBE_API_KEY
 const VIDEOS_BASE = "https://www.googleapis.com/youtube/v3/videos"
@@ -54,7 +58,7 @@ function decodeXMLEntities(str: string): string {
  */
 async function getVideosFromRSS(limit = 8): Promise<YouTubeVideo[]> {
   try {
-    const res = await fetch(RSS_URL, { cache: "no-store" })
+    const res = await fetch(RSS_URL, {})
     if (!res.ok) {
       console.error(`[YouTube] RSS fetch failed: HTTP ${res.status}`)
       return []
@@ -118,7 +122,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=contentDetails&playlistId=${uploadsPlaylistId}&maxResults=1&key=${API_KEY}`,
-    { cache: "no-store" }
+    {}
   )
   const playlistData = await playlistRes.json()
 
@@ -133,7 +137,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const videoRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,liveStreamingDetails&id=${latestVideoId}&key=${API_KEY}`,
-    { cache: "no-store" }
+    {}
   )
   const videoData = await videoRes.json()
 
@@ -176,7 +180,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`,
-    { cache: "no-store" }
+    {}
   )
   const playlistData = await playlistRes.json()
 
@@ -196,7 +200,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const detailsRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids.join(",")}&key=${API_KEY}`,
-    { cache: "no-store" }
+    {}
   )
   const detailsData = await detailsRes.json()
 
@@ -256,13 +260,8 @@ export async function GET() {
       _source: "api",
     }
 
-    // Cache at CDN/edge: 60s when live (for fast status updates), 5min otherwise
-    // Next.js overrides Cache-Control on Route Handlers — use Vercel-CDN-Cache-Control instead
-    const maxAge = isLive ? 60 : 300
-    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, s-maxage=${maxAge}s`)
-    return NextResponse.json(result, {
-      headers: { "Vercel-CDN-Cache-Control": `public, s-maxage=${maxAge}, stale-while-revalidate=30` },
-    })
+    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos`)
+    return NextResponse.json(result)
   }
 
   // ── API quota exhausted — fall back to RSS ─────────────────────────────────
@@ -278,8 +277,6 @@ export async function GET() {
     _source: "rss",
   }
 
-  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, s-maxage=300s`)
-  return NextResponse.json(result, {
-    headers: { "Vercel-CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=30" },
-  })
+  console.log(`[YouTube] RSS source — ${rssVideos.length} videos`)
+  return NextResponse.json(result)
 }
