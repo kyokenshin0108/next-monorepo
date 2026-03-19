@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Navbar from "@/components/shared/Navbar"
 import Footer from "@/components/shared/Footer"
+import type { YouTubeStatus, YouTubeVideo } from "@/app/api/youtube/route"
 
 export default function LiveStream() {
   const [showReminderDialog, setShowReminderDialog] = useState(false)
@@ -16,6 +17,8 @@ export default function LiveStream() {
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
   const [showFilterMenu, setShowFilterMenu] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date(2025, 5, 8))
+  const [youtubeStatus, setYoutubeStatus] = useState<YouTubeStatus | null>(null)
+  const [youtubeLoading, setYoutubeLoading] = useState(true)
 
   const monthNames = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -53,6 +56,26 @@ export default function LiveStream() {
   }
 
   useEffect(() => {
+    async function fetchYouTubeStatus() {
+      try {
+        const res = await fetch("/api/youtube")
+        if (res.ok) {
+          const data: YouTubeStatus = await res.json()
+          setYoutubeStatus(data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch YouTube status:", err)
+      } finally {
+        setYoutubeLoading(false)
+      }
+    }
+    fetchYouTubeStatus()
+    // Refresh every 2 minutes
+    const interval = setInterval(fetchYouTubeStatus, 120_000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Element
       if (!target.closest('#calendar-view-dropdown')) setShowCalendarDropdown(false)
@@ -73,43 +96,119 @@ export default function LiveStream() {
               {/* Video Player */}
               <div className="w-full lg:w-3/4">
                 <div className="relative bg-black rounded-lg overflow-hidden aspect-video" id="live-stream-container">
-                  <iframe id="youtube-live-frame" className="w-full h-full hidden" frameBorder="0" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                  <div id="stream-placeholder" className="w-full h-full">
-                    <img src="https://readdy.ai/api/search-image?query=professional%2520stock%2520market%2520analyst%2520explaining%2520financial%2520charts%2520on%2520camera%252C%2520studio%2520setup%2520with%2520multiple%2520monitors%2520showing%2520stock%2520data%2520in%2520background%252C%2520high-quality%2520lighting%252C%2520professional%2520equipment%252C%2520business%2520attire%252C%2520engaging%2520presentation%2520style&width=1280&height=720&seq=livestream_current&orientation=landscape" alt="Live Stream" className="w-full h-full object-cover" />
-                    <a href="https://www.youtube.com/@TheStockHunters" target="_blank" className="absolute top-4 left-4 bg-red-600 hover:bg-red-700 transition text-white px-3 py-1 rounded-full text-sm font-medium flex items-center group">
-                      <div className="w-4 h-4 flex items-center justify-center mr-1">
-                        <i className="ri-live-line"></i>
+                  {youtubeLoading ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                      <div className="text-white text-center">
+                        <i className="ri-loader-4-line text-4xl animate-spin block mb-2"></i>
+                        <span className="text-sm">Đang tải...</span>
                       </div>
-                      <span className="group-hover:underline">ĐANG PHÁT TRỰC TIẾP</span>
-                    </a>
-                    <div className="absolute bottom-4 right-4 bg-gray-900/80 text-white px-3 py-1 rounded-full text-sm">
-                      <span>2,458 người đang xem</span>
                     </div>
-                  </div>
+                  ) : youtubeStatus?.isLive && youtubeStatus.liveVideo ? (
+                    <>
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${youtubeStatus.liveVideo.videoId}?autoplay=1&mute=0`}
+                        frameBorder="0"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                      <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center pointer-events-none">
+                        <div className="w-4 h-4 flex items-center justify-center mr-1">
+                          <i className="ri-live-line"></i>
+                        </div>
+                        <span>ĐANG PHÁT TRỰC TIẾP</span>
+                      </div>
+                    </>
+                  ) : youtubeStatus?.latestVideo ? (
+                    <>
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${youtubeStatus.latestVideo.videoId}`}
+                        frameBorder="0"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                      <div className="absolute top-4 left-4 bg-gray-700 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center pointer-events-none">
+                        <div className="w-4 h-4 flex items-center justify-center mr-1">
+                          <i className="ri-video-line"></i>
+                        </div>
+                        <span>VIDEO MỚI NHẤT</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                      <a href="https://www.youtube.com/@TheStockHunters" target="_blank" rel="noopener noreferrer" className="text-white text-center hover:opacity-80 transition">
+                        <i className="ri-youtube-fill text-red-500 text-5xl block mb-2"></i>
+                        <span className="text-sm">Xem kênh TheStockHunters</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
                 <div className="bg-white rounded-lg p-5 mt-4">
-                  <h1 className="text-xl font-bold mb-2">Phân Tích Thị Trường Tuần 23/2025: Cơ Hội Đầu Tư Nhóm Cổ Phiếu Ngân Hàng</h1>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center">
-                      <div className="w-5 h-5 flex items-center justify-center mr-1">
-                        <i className="ri-user-line"></i>
+                  {youtubeStatus?.isLive && youtubeStatus.liveVideo ? (
+                    <>
+                      <h1 className="text-xl font-bold mb-2">{youtubeStatus.liveVideo.title}</h1>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center text-red-600 font-medium">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-live-line"></i>
+                          </div>
+                          <span>Đang phát trực tiếp</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-price-tag-3-line"></i>
+                          </div>
+                          <span>TheStockHunters</span>
+                        </div>
                       </div>
-                      <span>Trần Đức Minh</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-5 h-5 flex items-center justify-center mr-1">
-                        <i className="ri-time-line"></i>
+                      <p className="text-gray-700 mb-4 line-clamp-3">{youtubeStatus.liveVideo.description || "Phân tích thị trường chứng khoán trực tiếp cùng TheStockHunters."}</p>
+                    </>
+                  ) : youtubeStatus?.latestVideo ? (
+                    <>
+                      <h1 className="text-xl font-bold mb-2">{youtubeStatus.latestVideo.title}</h1>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-time-line"></i>
+                          </div>
+                          <span>{new Date(youtubeStatus.latestVideo.publishedAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-price-tag-3-line"></i>
+                          </div>
+                          <span>TheStockHunters</span>
+                        </div>
                       </div>
-                      <span>19:30 - 21:00, 08/06/2025</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-5 h-5 flex items-center justify-center mr-1">
-                        <i className="ri-price-tag-3-line"></i>
+                      <p className="text-gray-700 mb-4 line-clamp-3">{youtubeStatus.latestVideo.description || "Phân tích thị trường chứng khoán cùng TheStockHunters."}</p>
+                    </>
+                  ) : (
+                    <>
+                      <h1 className="text-xl font-bold mb-2">Phân Tích Thị Trường Tuần 23/2025: Cơ Hội Đầu Tư Nhóm Cổ Phiếu Ngân Hàng</h1>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-user-line"></i>
+                          </div>
+                          <span>Trần Đức Minh</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-time-line"></i>
+                          </div>
+                          <span>19:30 - 21:00, 08/06/2025</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-5 h-5 flex items-center justify-center mr-1">
+                            <i className="ri-price-tag-3-line"></i>
+                          </div>
+                          <span>Phân Tích Thị Trường</span>
+                        </div>
                       </div>
-                      <span>Phân Tích Thị Trường</span>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 mb-4">Phân tích chi tiết diễn biến thị trường tuần qua và dự báo xu hướng tuần tới. Tập trung vào nhóm cổ phiếu ngân hàng và bất động sản. Phân tích các yếu tố vĩ mô tác động đến thị trường và cơ hội đầu tư ngắn hạn.</p>
+                      <p className="text-gray-700 mb-4">Phân tích chi tiết diễn biến thị trường tuần qua và dự báo xu hướng tuần tới. Tập trung vào nhóm cổ phiếu ngân hàng và bất động sản. Phân tích các yếu tố vĩ mô tác động đến thị trường và cơ hội đầu tư ngắn hạn.</p>
+                    </>
+                  )}
                   <div className="flex flex-wrap gap-3">
                     <button id="reminder-btn" onClick={() => setShowReminderDialog(true)} className="bg-primary text-white px-4 py-2 rounded-button text-sm font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center">
                       <div className="w-5 h-5 flex items-center justify-center mr-1">
@@ -628,6 +727,45 @@ export default function LiveStream() {
             </div>
           </div>
         </section>
+
+        {/* YouTube Upcoming Streams from API */}
+        {!youtubeLoading && youtubeStatus && !youtubeStatus.isLive && youtubeStatus.upcomingStreams.length > 0 && (
+          <section className="py-10 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-3 mb-6">
+                <i className="ri-youtube-fill text-red-600 text-2xl"></i>
+                <h2 className="text-xl font-bold text-gray-900">Lịch Stream Sắp Tới trên YouTube</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {youtubeStatus.upcomingStreams.map((stream) => (
+                  <a
+                    key={stream.videoId}
+                    href={`https://www.youtube.com/watch?v=${stream.videoId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition group"
+                  >
+                    {stream.thumbnail && (
+                      <div className="relative aspect-video">
+                        <img src={stream.thumbnail} alt={stream.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <i className="ri-calendar-event-line"></i>
+                          <span>SẮP PHÁT</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <h3 className="font-medium text-gray-900 text-sm line-clamp-2 group-hover:text-primary transition mb-1">{stream.title}</h3>
+                      <p className="text-xs text-gray-500">
+                        {new Date(stream.publishedAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Notification Subscription */}
         <section className="py-12 bg-primary">
