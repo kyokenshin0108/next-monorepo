@@ -164,7 +164,7 @@ export default function LiveStream() {
                     </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                      <a href="https://www.youtube.com/@TheStockHunters" target="_blank" rel="noopener noreferrer" className="text-white text-center hover:opacity-80 transition">
+                      <a href="https://www.youtube.com/@Mbsbacsaigon/videos" target="_blank" rel="noopener noreferrer" className="text-white text-center hover:opacity-80 transition">
                         <i className="ri-youtube-fill text-red-500 text-5xl block mb-2"></i>
                         <span className="text-sm">Xem kênh TheStockHunters</span>
                       </a>
@@ -466,7 +466,7 @@ export default function LiveStream() {
                         <h3 className="font-semibold text-sm">Video Nổi Bật</h3>
                       </div>
                       <a
-                        href="https://www.youtube.com/@TheStockHunters"
+                        href="https://www.youtube.com/@Mbsbacsaigon/videos"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline"
@@ -545,7 +545,7 @@ export default function LiveStream() {
                           <i className="ri-youtube-fill text-red-400 text-3xl mb-2"></i>
                           <p className="text-sm">Không tải được video.</p>
                           <a
-                            href="https://www.youtube.com/@TheStockHunters"
+                            href="https://www.youtube.com/@Mbsbacsaigon/videos"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-primary hover:underline mt-1"
