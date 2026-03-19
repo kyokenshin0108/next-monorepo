@@ -25,11 +25,6 @@ export interface YouTubeStatus {
   _source?: "api" | "rss"
 }
 
-// ── Node.js in-memory cache ───────────────────────────────────────────────────
-let cachedStatus: YouTubeStatus | null = null
-let cacheExpiresAt = 0
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function parseDurationSeconds(iso: string): number {
   const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
@@ -237,14 +232,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function GET() {
-  // ── Serve from cache if still valid ────────────────────────────────────────
-  if (cachedStatus && Date.now() < cacheExpiresAt) {
-    const ttlSec = Math.round((cacheExpiresAt - Date.now()) / 1000)
-    console.log(`[YouTube] Cache hit (${cachedStatus._source ?? "?"}) — ${ttlSec}s remaining`)
-    return NextResponse.json(cachedStatus)
-  }
-
-  console.log("[YouTube] Cache miss — fetching fresh data")
+  console.log("[YouTube] Fetching fresh data")
 
   // ── Try YouTube Data API first ──────────────────────────────────────────────
   const [liveResult, apiVideos] = await Promise.all([
@@ -268,10 +256,12 @@ export async function GET() {
       _source: "api",
     }
 
-    cachedStatus = result
-    cacheExpiresAt = Date.now() + (isLive ? 60_000 : CACHE_TTL_MS)
-    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, cached ${isLive ? "1min" : "5min"}`)
-    return NextResponse.json(result)
+    // Cache at CDN/edge: 60s when live (for fast status updates), 5min otherwise
+    const maxAge = isLive ? 60 : 300
+    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, s-maxage=${maxAge}s`)
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": `public, s-maxage=${maxAge}, stale-while-revalidate=30` },
+    })
   }
 
   // ── API quota exhausted — fall back to RSS ─────────────────────────────────
@@ -287,8 +277,8 @@ export async function GET() {
     _source: "rss",
   }
 
-  cachedStatus = result
-  cacheExpiresAt = Date.now() + CACHE_TTL_MS
-  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, cached 5min`)
-  return NextResponse.json(result)
+  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, s-maxage=300s`)
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=30" },
+  })
 }
