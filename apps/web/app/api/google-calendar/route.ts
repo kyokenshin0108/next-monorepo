@@ -37,21 +37,23 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await res.json()
-    const events: CalendarEvent[] = (data.items || []).map((item: {
-      id: string
-      summary?: string
-      start?: { dateTime?: string; date?: string }
-      end?: { dateTime?: string; date?: string }
-      description?: string
-      htmlLink?: string
-    }) => ({
-      id: item.id,
-      title: item.summary || "Live Stream",
-      start: item.start?.dateTime || item.start?.date || "",
-      end: item.end?.dateTime || item.end?.date || "",
-      description: item.description || "",
-      htmlLink: item.htmlLink || "",
-    }))
+    const events: CalendarEvent[] = (data.items || [])
+      .filter((item: { summary?: string }) => item.summary && /\S/.test(item.summary))
+      .map((item: {
+        id: string
+        summary?: string
+        start?: { dateTime?: string; date?: string }
+        end?: { dateTime?: string; date?: string }
+        description?: string
+        htmlLink?: string
+      }) => ({
+        id: item.id,
+        title: item.summary!.trim(),
+        start: item.start?.dateTime || item.start?.date || "",
+        end: item.end?.dateTime || item.end?.date || "",
+        description: item.description || "",
+        htmlLink: item.htmlLink || "",
+      }))
 
     return NextResponse.json({ events })
   } catch (err) {

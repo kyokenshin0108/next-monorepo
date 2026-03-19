@@ -84,7 +84,7 @@ export default function LiveStream() {
       try {
         const year = currentDate.getFullYear()
         const month = currentDate.getMonth()
-        const res = await fetch(`/api/google-calendar?year=${year}&month=${month}`)
+        const res = await fetch(`/api/google-calendar?year=${year}&month=${month}`, { cache: 'no-store' })
         if (res.ok) {
           const data = await res.json()
           setCalendarEvents(data.events || [])
@@ -524,19 +524,6 @@ export default function LiveStream() {
                           {view === 'month' ? 'Xem theo tháng' : view === 'week' ? 'Xem theo tuần' : view === 'day' ? 'Xem theo ngày' : 'Xem theo danh sách'}
                         </button>
                       ))}
-                      <div className="border-t border-gray-100 mt-2 pt-2">
-                        <div className="px-4 py-2">
-                          <h3 className="text-sm font-medium text-gray-700">Xuất lịch</h3>
-                        </div>
-                        <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 flex items-center">
-                          <i className="ri-download-cloud-line mr-2"></i>
-                          Tải xuống (iCal)
-                        </button>
-                        <button onClick={() => window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text=TheStockHunters%20Live%20Stream%20Schedule&dates=20250608/20250608', '_blank')} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 flex items-center">
-                          <i className="ri-google-line mr-2"></i>
-                          Thêm vào Google Calendar
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -645,6 +632,7 @@ export default function LiveStream() {
                   function eventsForDay(day: number): CalendarEvent[] {
                     return calendarEvents.filter(e => {
                       if (!e.start) return false
+                      if (!e.title || !/\S/.test(e.title)) return false
                       const d = new Date(e.start)
                       return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year
                     })
@@ -686,7 +674,7 @@ export default function LiveStream() {
                     cells.push(
                       <div
                         key={`day-${day}`}
-                        className={`p-1 border border-gray-100 rounded-lg ${hasEvents || isToday ? "h-32" : "h-24"} ${isToday ? "bg-blue-50 text-gray-700" : "text-gray-700"}`}
+                        className={`p-1 border border-gray-100 rounded-lg ${hasEvents ? "h-32" : "h-24"} ${isToday ? "bg-blue-50 text-gray-700" : "text-gray-700"}`}
                       >
                         <div className={`text-sm ${isToday ? "font-medium" : ""}`}>{day}</div>
                         {calendarLoading ? (
@@ -698,19 +686,16 @@ export default function LiveStream() {
                             {dayEvents.map(ev => {
                               const color = eventColor(ev.start)
                               return (
-                                <a
+                                <div
                                   key={ev.id}
-                                  href={ev.htmlLink || `https://www.youtube.com/@TheStockHunters`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`p-1 ${color.bg} ${color.text} text-xs rounded flex items-center hover:opacity-80 transition`}
+                                  className={`p-1 ${color.bg} ${color.text} text-xs rounded flex items-center`}
                                   title={ev.title}
                                 >
                                   <div className="w-3 h-3 flex items-center justify-center mr-1 flex-shrink-0">
                                     <i className="ri-live-line text-[10px]"></i>
                                   </div>
                                   <div className="truncate">{fmtTime(ev.start)} - {ev.title}</div>
-                                </a>
+                                </div>
                               )
                             })}
                           </div>

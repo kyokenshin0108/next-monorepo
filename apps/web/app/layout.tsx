@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Montserrat, Pacifico } from "next/font/google"
 import "@workspace/ui/globals.css"
+import { AuthProvider } from "@/lib/auth/context"
 
 const montserrat = Montserrat({
   subsets: ["latin", "vietnamese"],
@@ -36,7 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${montserrat.variable} ${pacifico.variable} bg-gray-50 min-h-screen`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

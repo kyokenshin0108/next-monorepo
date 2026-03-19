@@ -265,26 +265,35 @@ export default async function TinTuc({ searchParams }: PageProps) {
   const supabaseConfigured =
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  let events: Awaited<ReturnType<typeof getUpcomingEvents>> = []
+
   if (supabaseConfigured) {
+    const deadline = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000))
     try {
-      const [feat, news, cafef, vnexpress, vneconomy] = await Promise.all([
-        getFeaturedArticle(),
-        getNewsArticles({ page }),
-        getLatestBySource("cafef", 3),
-        getLatestBySource("vnexpress", 3),
-        getLatestBySource("vneconomy", 3),
+      const result = await Promise.race([
+        Promise.all([
+          getFeaturedArticle(),
+          getNewsArticles({ page }),
+          getLatestBySource("cafef", 3),
+          getLatestBySource("vnexpress", 3),
+          getLatestBySource("vneconomy", 3),
+          getUpcomingEvents(40),
+        ]),
+        deadline,
       ])
-      featured = feat
-      newsResult = news
-      cafefArticles = cafef
-      vnexpressArticles = vnexpress
-      vneconomyArticles = vneconomy
+      if (result !== null) {
+        const [feat, news, cafef, vnexpress, vneconomy, evts] = result
+        featured = feat
+        newsResult = news
+        cafefArticles = cafef
+        vnexpressArticles = vnexpress
+        vneconomyArticles = vneconomy
+        events = evts
+      }
     } catch {
       // Supabase not reachable — show empty state
     }
   }
-
-  const events = await getUpcomingEvents(40).catch(() => [])
   const { articles, totalPages } = newsResult
 
   // Side articles for featured: top 2 from grid (excluding featured itself)
