@@ -257,10 +257,11 @@ export async function GET() {
     }
 
     // Cache at CDN/edge: 60s when live (for fast status updates), 5min otherwise
+    // Next.js overrides Cache-Control on Route Handlers — use Vercel-CDN-Cache-Control instead
     const maxAge = isLive ? 60 : 300
     console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, s-maxage=${maxAge}s`)
     return NextResponse.json(result, {
-      headers: { "Cache-Control": `public, s-maxage=${maxAge}, stale-while-revalidate=30` },
+      headers: { "Vercel-CDN-Cache-Control": `public, s-maxage=${maxAge}, stale-while-revalidate=30` },
     })
   }
 
@@ -279,6 +280,6 @@ export async function GET() {
 
   console.log(`[YouTube] RSS source — ${rssVideos.length} videos, s-maxage=300s`)
   return NextResponse.json(result, {
-    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=30" },
+    headers: { "Vercel-CDN-Cache-Control": "public, s-maxage=300, stale-while-revalidate=30" },
   })
 }
