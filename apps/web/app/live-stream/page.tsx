@@ -20,6 +20,7 @@ export default function LiveStream() {
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [youtubeStatus, setYoutubeStatus] = useState<YouTubeStatus | null>(null)
   const [youtubeLoading, setYoutubeLoading] = useState(true)
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null)
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
   const [calendarLoading, setCalendarLoading] = useState(true)
 
@@ -108,6 +109,9 @@ export default function LiveStream() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+  // Active video in main player: user-selected sidebar video, or the latest regular video
+  const activeVideo = selectedVideo ?? youtubeStatus?.latestVideo ?? null
+
   return (
     <>
       <Navbar />
@@ -142,11 +146,11 @@ export default function LiveStream() {
                         <span>ĐANG PHÁT TRỰC TIẾP</span>
                       </div>
                     </>
-                  ) : youtubeStatus?.latestVideo ? (
+                  ) : activeVideo ? (
                     <>
                       <iframe
                         className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${youtubeStatus.latestVideo.videoId}?rel=0&modestbranding=1`}
+                        src={`https://www.youtube.com/embed/${activeVideo.videoId}?rel=0&modestbranding=1`}
                         frameBorder="0"
                         allowFullScreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -187,15 +191,15 @@ export default function LiveStream() {
                       </div>
                       <p className="text-gray-700 mb-4 line-clamp-3">{youtubeStatus.liveVideo.description || "Phân tích thị trường chứng khoán trực tiếp cùng TheStockHunters."}</p>
                     </>
-                  ) : youtubeStatus?.latestVideo ? (
+                  ) : activeVideo ? (
                     <>
-                      <h1 className="text-xl font-bold mb-2">{youtubeStatus.latestVideo.title}</h1>
+                      <h1 className="text-xl font-bold mb-2">{activeVideo.title}</h1>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
                         <div className="flex items-center">
                           <div className="w-5 h-5 flex items-center justify-center mr-1">
                             <i className="ri-time-line"></i>
                           </div>
-                          <span>{new Date(youtubeStatus.latestVideo.publishedAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                          <span>{new Date(activeVideo.publishedAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
                         </div>
                         <div className="flex items-center">
                           <div className="w-5 h-5 flex items-center justify-center mr-1">
@@ -204,7 +208,7 @@ export default function LiveStream() {
                           <span>TheStockHunters</span>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 line-clamp-3">{youtubeStatus.latestVideo.description || "Phân tích thị trường chứng khoán cùng TheStockHunters."}</p>
+                      <p className="text-gray-700 mb-4 line-clamp-3">{activeVideo.description || "Phân tích thị trường chứng khoán cùng TheStockHunters."}</p>
                     </>
                   ) : (
                     <>
@@ -487,49 +491,54 @@ export default function LiveStream() {
                         </div>
                       ) : youtubeStatus?.recentVideos && youtubeStatus.recentVideos.length > 0 ? (
                         <div className="p-3 space-y-2">
-                          {youtubeStatus.recentVideos.map((video) => (
-                            <a
-                              key={video.videoId}
-                              href={`https://www.youtube.com/watch?v=${video.videoId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex gap-2 group hover:bg-gray-50 rounded-lg p-1 transition"
-                            >
-                              {/* Thumbnail */}
-                              <div className="relative w-20 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-200">
-                                {video.thumbnail ? (
-                                  <img
-                                    src={video.thumbnail}
-                                    alt={video.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <i className="ri-youtube-fill text-red-400 text-xl"></i>
-                                  </div>
-                                )}
-                                {/* Play icon overlay */}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-                                  <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                    <i className="ri-play-fill text-gray-800 text-xs"></i>
+                          {youtubeStatus.recentVideos.map((video) => {
+                            const isSelected = selectedVideo?.videoId === video.videoId
+                            return (
+                              <button
+                                key={video.videoId}
+                                onClick={() => setSelectedVideo(video)}
+                                className={`flex gap-2 group rounded-lg p-1 transition w-full text-left ${
+                                  isSelected
+                                    ? "bg-primary/10 ring-1 ring-primary/30"
+                                    : "hover:bg-gray-50"
+                                }`}
+                              >
+                                {/* Thumbnail */}
+                                <div className="relative w-20 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-200">
+                                  {video.thumbnail ? (
+                                    <img
+                                      src={video.thumbnail}
+                                      alt={video.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <i className="ri-youtube-fill text-red-400 text-xl"></i>
+                                    </div>
+                                  )}
+                                  {/* Play icon overlay */}
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                                    <div className={`w-6 h-6 rounded-full bg-white/80 flex items-center justify-center transition ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+                                      <i className={`ri-play-fill text-xs ${isSelected ? "text-primary" : "text-gray-800"}`}></i>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              {/* Info */}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-900 line-clamp-2 group-hover:text-primary transition leading-tight">
-                                  {video.title}
-                                </p>
-                                <p className="text-[11px] text-gray-400 mt-1">
-                                  {new Date(video.publishedAt).toLocaleDateString("vi-VN", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })}
-                                </p>
-                              </div>
-                            </a>
-                          ))}
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-medium line-clamp-2 transition leading-tight ${isSelected ? "text-primary" : "text-gray-900 group-hover:text-primary"}`}>
+                                    {video.title}
+                                  </p>
+                                  <p className="text-[11px] text-gray-400 mt-1">
+                                    {new Date(video.publishedAt).toLocaleDateString("vi-VN", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                              </button>
+                            )
+                          })}
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">

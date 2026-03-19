@@ -152,33 +152,25 @@ export async function GET() {
       } as YouTubeStatus)
     }
 
-    // ── Not live — fetch latest video + upcoming streams + recent regular videos ──
-    const [latestRes, upcomingRes, recentVideos] = await Promise.all([
-      fetch(
-        `${SEARCH_BASE}?part=snippet&channelId=${CHANNEL_ID}&order=date&type=video&maxResults=1&key=${API_KEY}`,
-        { next: { revalidate: 300 } }
-      ),
+    // ── Not live — fetch regular videos + upcoming streams ──
+    // getRecentRegularVideos(8): index 0 → main player, index 1-7 → sidebar list
+    const [allRegularVideos, upcomingRes] = await Promise.all([
+      getRecentRegularVideos(8),
       fetch(
         `${SEARCH_BASE}?part=snippet&channelId=${CHANNEL_ID}&eventType=upcoming&type=video&order=date&maxResults=5&key=${API_KEY}`,
         { next: { revalidate: 300 } }
       ),
-      getRecentRegularVideos(7),
     ])
 
-    const [latestData, upcomingData] = await Promise.all([
-      latestRes.json(),
-      upcomingRes.json(),
-    ])
-
-    const latestItems = latestData.items ?? []
+    const upcomingData = await upcomingRes.json()
     const upcomingItems = upcomingData.items ?? []
 
     return NextResponse.json({
       isLive: false,
       liveVideo: null,
-      latestVideo: latestItems.length > 0 ? mapSearchItem(latestItems[0]) : null,
+      latestVideo: allRegularVideos[0] ?? null,
       upcomingStreams: upcomingItems.map(mapSearchItem),
-      recentVideos,
+      recentVideos: allRegularVideos.slice(1),
     } as YouTubeStatus)
   } catch (err) {
     console.error("YouTube API error:", err)
