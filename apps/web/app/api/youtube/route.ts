@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 
-// Tell Next.js to cache this Route Handler at the edge for 5 minutes.
-// Individual fetches must NOT use cache:"no-store" or Next.js overrides this.
-export const revalidate = 300
+// Force dynamic — caching is handled by Supabase, not Next.js/Vercel edge
+export const dynamic = "force-dynamic"
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const CACHE_TTL_SECONDS = 300      // 5 min when not live
+const CACHE_TTL_LIVE_SECONDS = 60  // 1 min when live
 
 const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCg1a2KaW4f7c0ThU3Dbho0A"
 const API_KEY = process.env.YOUTUBE_API_KEY
@@ -233,10 +241,50 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
   return results
 }
 
+// ── Supabase cache helpers ────────────────────────────────────────────────────
+
+async function readCache(): Promise<{ data: YouTubeStatus; fetchedAt: string } | null> {
+  try {
+    const { data, error } = await supabase
+      .from("youtube_cache")
+      .select("data, fetched_at")
+      .eq("id", 1)
+      .single()
+    if (error || !data) return null
+    return { data: data.data as YouTubeStatus, fetchedAt: data.fetched_at as string }
+  } catch {
+    return null
+  }
+}
+
+async function writeCache(status: YouTubeStatus): Promise<void> {
+  try {
+    await supabase.from("youtube_cache").upsert({
+      id: 1,
+      data: status,
+      fetched_at: new Date().toISOString(),
+    })
+  } catch (err) {
+    console.error("[YouTube] Failed to write Supabase cache:", err)
+  }
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function GET() {
-  console.log("[YouTube] Fetching fresh data")
+  // ── Check Supabase cache ────────────────────────────────────────────────────
+  const cached = await readCache()
+  if (cached) {
+    const ageSeconds = (Date.now() - new Date(cached.fetchedAt).getTime()) / 1000
+    const ttl = cached.data.isLive ? CACHE_TTL_LIVE_SECONDS : CACHE_TTL_SECONDS
+    if (ageSeconds < ttl) {
+      console.log(`[YouTube] Supabase cache hit — age=${Math.round(ageSeconds)}s, ttl=${ttl}s, source=${cached.data._source}`)
+      return NextResponse.json(cached.data)
+    }
+    console.log(`[YouTube] Supabase cache stale — age=${Math.round(ageSeconds)}s, fetching fresh`)
+  } else {
+    console.log("[YouTube] No Supabase cache — fetching fresh")
+  }
 
   // ── Try YouTube Data API first ──────────────────────────────────────────────
   const [liveResult, apiVideos] = await Promise.all([
@@ -247,7 +295,6 @@ export async function GET() {
   const apiWorking = liveResult !== null && apiVideos !== null
 
   if (apiWorking) {
-    // API is healthy — build full response
     const { isLive, liveVideo } = liveResult!
     const allVideos = apiVideos!
 
@@ -260,16 +307,23 @@ export async function GET() {
       _source: "api",
     }
 
-    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos`)
+    await writeCache(result)
+    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, cached in Supabase`)
     return NextResponse.json(result)
   }
 
   // ── API quota exhausted — fall back to RSS ─────────────────────────────────
   console.warn("[YouTube] API unavailable (quota/auth error) — falling back to RSS feed")
-  const rssVideos = await getVideosFromRSS(8)
 
+  // If we have a stale Supabase cache, serve it rather than degrading to RSS
+  if (cached) {
+    console.log("[YouTube] Serving stale Supabase cache instead of RSS due to quota error")
+    return NextResponse.json(cached.data)
+  }
+
+  const rssVideos = await getVideosFromRSS(8)
   const result: YouTubeStatus = {
-    isLive: false, // cannot determine without API
+    isLive: false,
     liveVideo: null,
     latestVideo: rssVideos[0] ?? null,
     upcomingStreams: [],
@@ -277,6 +331,7 @@ export async function GET() {
     _source: "rss",
   }
 
-  console.log(`[YouTube] RSS source — ${rssVideos.length} videos`)
+  await writeCache(result)
+  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, cached in Supabase`)
   return NextResponse.json(result)
 }
