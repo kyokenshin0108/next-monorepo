@@ -58,7 +58,7 @@ function decodeXMLEntities(str: string): string {
  */
 async function getVideosFromRSS(limit = 8): Promise<YouTubeVideo[]> {
   try {
-    const res = await fetch(RSS_URL, {})
+    const res = await fetch(RSS_URL, { next: { revalidate: 300 } })
     if (!res.ok) {
       console.error(`[YouTube] RSS fetch failed: HTTP ${res.status}`)
       return []
@@ -122,7 +122,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=contentDetails&playlistId=${uploadsPlaylistId}&maxResults=1&key=${API_KEY}`,
-    {}
+    { next: { revalidate: 300 } }
   )
   const playlistData = await playlistRes.json()
 
@@ -137,7 +137,7 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 
   const videoRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,liveStreamingDetails&id=${latestVideoId}&key=${API_KEY}`,
-    {}
+    { next: { revalidate: 300 } }
   )
   const videoData = await videoRes.json()
 
@@ -180,7 +180,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const playlistRes = await fetch(
     `${PLAYLIST_BASE}?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`,
-    {}
+    { next: { revalidate: 300 } }
   )
   const playlistData = await playlistRes.json()
 
@@ -200,7 +200,7 @@ async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null>
 
   const detailsRes = await fetch(
     `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids.join(",")}&key=${API_KEY}`,
-    {}
+    { next: { revalidate: 300 } }
   )
   const detailsData = await detailsRes.json()
 
