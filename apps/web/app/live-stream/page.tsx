@@ -4,6 +4,7 @@ import Link from "next/link"
 import Navbar from "@/components/shared/Navbar"
 import Footer from "@/components/shared/Footer"
 import type { YouTubeStatus, YouTubeVideo } from "@/app/api/youtube/route"
+import type { CalendarEvent } from "@/app/api/google-calendar/route"
 
 export default function LiveStream() {
   const [showReminderDialog, setShowReminderDialog] = useState(false)
@@ -19,6 +20,8 @@ export default function LiveStream() {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 5, 8))
   const [youtubeStatus, setYoutubeStatus] = useState<YouTubeStatus | null>(null)
   const [youtubeLoading, setYoutubeLoading] = useState(true)
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
+  const [calendarLoading, setCalendarLoading] = useState(true)
 
   const monthNames = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -74,6 +77,26 @@ export default function LiveStream() {
     const interval = setInterval(fetchYouTubeStatus, 120_000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    async function fetchCalendarEvents() {
+      setCalendarLoading(true)
+      try {
+        const year = currentDate.getFullYear()
+        const month = currentDate.getMonth()
+        const res = await fetch(`/api/google-calendar?year=${year}&month=${month}`)
+        if (res.ok) {
+          const data = await res.json()
+          setCalendarEvents(data.events || [])
+        }
+      } catch (err) {
+        console.error("Failed to fetch calendar events:", err)
+      } finally {
+        setCalendarLoading(false)
+      }
+    }
+    fetchCalendarEvents()
+  }, [currentDate])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -480,10 +503,6 @@ export default function LiveStream() {
                 <h2 className="text-2xl font-bold text-gray-900">Lịch Live Stream Sắp Tới</h2>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span className="flex items-center gap-1">
-                    <i className="ri-time-line"></i>
-                    <span>Múi giờ: GMT+7</span>
-                  </span>
-                  <span className="flex items-center gap-1">
                     <i className="ri-calendar-line"></i>
                     <span>Thứ 2 - Thứ 6</span>
                   </span>
@@ -613,116 +632,106 @@ export default function LiveStream() {
                   <div key={day} className="text-sm font-medium text-gray-500">{day}</div>
                 ))}
               </div>
-              {/* Calendar grid */}
+              {/* Calendar grid — dynamic from Google Calendar */}
               <div className="grid grid-cols-7 gap-2">
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">26</div></div>
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">27</div></div>
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">28</div></div>
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">29</div></div>
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">30</div></div>
-                <div className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg"><div className="text-sm">31</div></div>
-                <div className="h-24 p-1 text-gray-700 border border-gray-100 rounded-lg"><div className="text-sm">1</div></div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">2</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Nguyễn Thị Lan</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Lê Văn Thành</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">3</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Phạm Thị Hương</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Trần Đức Minh</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">4</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Lê Hoàng Nam</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">5</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Nguyễn Thị Lan</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Trần Đức Minh</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">6</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Phạm Thị Hương</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">7</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Tọa Đàm Chuyên Gia</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg bg-blue-50">
-                  <div className="text-sm font-medium">8</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Lê Hoàng Nam</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Phạm Thị Hương</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">9</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Nguyễn Thị Lan</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Trần Đức Minh</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg bg-blue-50">
-                  <div className="text-sm font-medium">10</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Phạm Thị Hương</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Phân Tích Kỹ Thuật</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">11</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Lê Hoàng Nam</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Trần Đức Minh</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg bg-blue-50">
-                  <div className="text-sm font-medium">12</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Nguyễn Thị Lan</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">20:00 - Phân Tích Cơ Bản</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">13</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Phạm Thị Hương</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Trần Đức Minh</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg">
-                  <div className="text-sm">14</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:30 - Tọa Đàm Chuyên Gia</div></div>
-                  </div>
-                </div>
-                <div className="h-32 p-1 text-gray-700 border border-gray-100 rounded-lg bg-blue-50">
-                  <div className="text-sm font-medium">15</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="p-1 bg-red-100 text-red-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">9:00 - Trần Đức Minh</div></div>
-                    <div className="p-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">13:30 - Lê Hoàng Nam</div></div>
-                    <div className="p-1 bg-purple-100 text-purple-800 text-xs rounded flex items-center"><div className="w-3 h-3 flex items-center justify-center mr-1"><i className="ri-user-line text-[10px]"></i></div><div className="truncate">19:00 - Tọa Đàm</div></div>
-                  </div>
-                </div>
+                {(() => {
+                  const year = currentDate.getFullYear()
+                  const month = currentDate.getMonth()
+                  const firstDay = new Date(year, month, 1).getDay() // 0=Sun
+                  const daysInMonth = new Date(year, month + 1, 0).getDate()
+                  const prevMonthLastDay = new Date(year, month, 0).getDate()
+                  const today = new Date()
+
+                  function eventsForDay(day: number): CalendarEvent[] {
+                    return calendarEvents.filter(e => {
+                      if (!e.start) return false
+                      const d = new Date(e.start)
+                      return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year
+                    })
+                  }
+
+                  function eventColor(start: string): { bg: string; text: string } {
+                    const hour = new Date(start).getHours()
+                    if (hour < 12) return { bg: "bg-red-100", text: "text-red-800" }
+                    if (hour < 17) return { bg: "bg-blue-100", text: "text-blue-800" }
+                    return { bg: "bg-purple-100", text: "text-purple-800" }
+                  }
+
+                  function fmtTime(start: string): string {
+                    const d = new Date(start)
+                    return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`
+                  }
+
+                  const cells: React.ReactNode[] = []
+
+                  // Previous month trailing days
+                  for (let i = 0; i < firstDay; i++) {
+                    const d = prevMonthLastDay - firstDay + 1 + i
+                    cells.push(
+                      <div key={`prev-${d}`} className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg">
+                        <div className="text-sm">{d}</div>
+                      </div>
+                    )
+                  }
+
+                  // Current month days
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const isToday =
+                      today.getDate() === day &&
+                      today.getMonth() === month &&
+                      today.getFullYear() === year
+                    const dayEvents = eventsForDay(day)
+                    const hasEvents = dayEvents.length > 0
+
+                    cells.push(
+                      <div
+                        key={`day-${day}`}
+                        className={`p-1 border border-gray-100 rounded-lg ${hasEvents || isToday ? "h-32" : "h-24"} ${isToday ? "bg-blue-50 text-gray-700" : "text-gray-700"}`}
+                      >
+                        <div className={`text-sm ${isToday ? "font-medium" : ""}`}>{day}</div>
+                        {calendarLoading ? (
+                          <div className="mt-1 space-y-1">
+                            <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1 mt-1">
+                            {dayEvents.map(ev => {
+                              const color = eventColor(ev.start)
+                              return (
+                                <a
+                                  key={ev.id}
+                                  href={ev.htmlLink || `https://www.youtube.com/@TheStockHunters`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`p-1 ${color.bg} ${color.text} text-xs rounded flex items-center hover:opacity-80 transition`}
+                                  title={ev.title}
+                                >
+                                  <div className="w-3 h-3 flex items-center justify-center mr-1 flex-shrink-0">
+                                    <i className="ri-live-line text-[10px]"></i>
+                                  </div>
+                                  <div className="truncate">{fmtTime(ev.start)} - {ev.title}</div>
+                                </a>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // Next month leading days to complete the last row
+                  const totalCells = cells.length
+                  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7)
+                  for (let i = 1; i <= remaining; i++) {
+                    cells.push(
+                      <div key={`next-${i}`} className="h-24 p-1 text-gray-400 border border-gray-100 rounded-lg">
+                        <div className="text-sm">{i}</div>
+                      </div>
+                    )
+                  }
+
+                  return cells
+                })()}
               </div>
             </div>
           </div>
