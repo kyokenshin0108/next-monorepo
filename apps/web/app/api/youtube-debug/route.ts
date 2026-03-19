@@ -1,12 +1,7 @@
 /**
  * GET /api/youtube-debug
- *
- * Diagnostic endpoint — shows raw YouTube API responses and quota status.
- * Only accessible in non-production or with ?secret= matching CRON_SECRET.
- *
- * Usage:
- *   http://localhost:3000/api/youtube-debug
- *   https://yourdomain.com/api/youtube-debug?secret=stockhunter123
+ * Diagnostic endpoint — tests all YouTube data sources and reports status.
+ * Dev: open. Prod: requires ?secret=<CRON_SECRET>
  */
 import { NextRequest, NextResponse } from "next/server"
 
@@ -14,12 +9,11 @@ const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCg1a2KaW4f7c0ThU3Dbho0A"
 const API_KEY = process.env.YOUTUBE_API_KEY
 const VIDEOS_BASE = "https://www.googleapis.com/youtube/v3/videos"
 const PLAYLIST_BASE = "https://www.googleapis.com/youtube/v3/playlistItems"
+const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`
 const CRON_SECRET = process.env.CRON_SECRET
 
 export async function GET(req: NextRequest) {
-  // Simple auth: allow in dev, require ?secret= in prod
-  const isProd = process.env.NODE_ENV === "production"
-  if (isProd) {
+  if (process.env.NODE_ENV === "production") {
     const secret = req.nextUrl.searchParams.get("secret")
     if (!secret || secret !== CRON_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -27,80 +21,122 @@ export async function GET(req: NextRequest) {
   }
 
   const uploadsPlaylistId = CHANNEL_ID.replace(/^UC/, "UU")
-  const results: Record<string, unknown> = {
+  const report: Record<string, unknown> = {
     config: {
       CHANNEL_ID,
       uploadsPlaylistId,
+      RSS_URL,
       API_KEY_SET: !!API_KEY,
-      API_KEY_PREVIEW: API_KEY ? `${API_KEY.slice(0, 10)}...` : null,
+      API_KEY_PREVIEW: API_KEY ? `${API_KEY.slice(0, 12)}...` : null,
       timestamp: new Date().toISOString(),
     },
   }
 
-  if (!API_KEY) {
-    return NextResponse.json({ error: "YOUTUBE_API_KEY not set", ...results }, { status: 500 })
-  }
-
-  // Test 1: playlistItems.list (1 quota unit)
+  // ── Test 1: RSS feed (0 quota units) ────────────────────────────────────────
   try {
-    const r = await fetch(
-      `${PLAYLIST_BASE}?part=contentDetails,snippet&playlistId=${uploadsPlaylistId}&maxResults=5&key=${API_KEY}`,
-      { cache: "no-store" }
-    )
-    const data = await r.json()
-    results.playlistItems = {
-      httpStatus: r.status,
-      error: data.error ?? null,
-      itemCount: data.items?.length ?? 0,
-      firstVideoId: data.items?.[0]?.contentDetails?.videoId ?? null,
-      firstTitle: data.items?.[0]?.snippet?.title ?? null,
-    }
+    const rssRes = await fetch(RSS_URL, { cache: "no-store" })
+    const xml = await rssRes.text()
+    const videoIds = [...xml.matchAll(/<yt:videoId>(.*?)<\/yt:videoId>/g)].map(m => m[1])
+    const titles = [...xml.matchAll(/<title>([\s\S]*?)<\/title>/g)]
+      .slice(1) // skip feed-level <title>
+      .slice(0, 5)
+      .map(m => m[1].trim())
 
-    // Test 2: videos.list for first 5 IDs (1 quota unit)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ids = (data.items ?? []).map((i: any) => i.contentDetails?.videoId).filter(Boolean).join(",")
-    if (ids) {
-      const vr = await fetch(
-        `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${API_KEY}`,
-        { cache: "no-store" }
-      )
-      const vdata = await vr.json()
-      results.videos = {
-        httpStatus: vr.status,
-        error: vdata.error ?? null,
-        itemCount: vdata.items?.length ?? 0,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items: (vdata.items ?? []).map((v: any) => ({
-          videoId: v.id,
-          title: v.snippet?.title,
-          liveBroadcastContent: v.snippet?.liveBroadcastContent,
-          duration: v.contentDetails?.duration,
-          hasLiveStreamingDetails: v.liveStreamingDetails != null,
-        })),
-      }
+    report.rss = {
+      httpStatus: rssRes.status,
+      ok: rssRes.ok,
+      videoCount: videoIds.length,
+      firstVideoIds: videoIds.slice(0, 5),
+      firstTitles: titles,
+      error: rssRes.ok ? null : `HTTP ${rssRes.status}`,
+      shortsDetectionNote: "Shorts detected via <link href='/shorts/'> in RSS — no API needed",
     }
   } catch (err) {
-    results.playlistItems = { error: String(err) }
+    report.rss = { error: String(err) }
   }
 
-  // Diagnosis
-  const playlistError = (results.playlistItems as Record<string, unknown>)?.error
-  const videosError = (results.videos as Record<string, unknown> | undefined)?.error
+  // ── Test 2: playlistItems.list (1 quota unit) ────────────────────────────────
+  if (!API_KEY) {
+    report.api = { error: "YOUTUBE_API_KEY not set in environment" }
+  } else {
+    try {
+      const plRes = await fetch(
+        `${PLAYLIST_BASE}?part=contentDetails,snippet&playlistId=${uploadsPlaylistId}&maxResults=5&key=${API_KEY}`,
+        { cache: "no-store" }
+      )
+      const plData = await plRes.json()
+      const quotaError = plData.error?.errors?.[0]?.reason === "quotaExceeded"
 
-  results.diagnosis = {
-    quotaExceeded:
-      (playlistError as Record<string, unknown> | null)?.code === 403 ||
-      (videosError as Record<string, unknown> | null)?.code === 403,
-    recommendation: (() => {
-      if ((playlistError as Record<string, unknown> | null)?.code === 403) {
-        return "API key quota is exhausted (10,000 units/day). Quota resets at midnight Pacific Time. With the optimized route (no search.list), daily usage is now ~576 units — well within limit after reset."
+      report.playlistItems = {
+        httpStatus: plRes.status,
+        quotaExceeded: quotaError,
+        error: plData.error ? `[${plData.error.errors?.[0]?.reason}] ${plData.error.message}` : null,
+        itemCount: plData.items?.length ?? 0,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items: (plData.items ?? []).slice(0, 3).map((i: any) => ({
+          videoId: i.contentDetails?.videoId,
+          title: i.snippet?.title,
+        })),
       }
-      if (!API_KEY) return "Set YOUTUBE_API_KEY in .env.local"
-      return "API key is working correctly."
-    })(),
-    quotaUsagePerDay: "~576 units (2 units × 288 cache-miss periods/day at 5-min TTL)",
-    quotaLimit: "10,000 units/day (free tier)",
+
+      // ── Test 3: videos.list (1 quota unit) ────────────────────────────────────
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ids = (plData.items ?? []).map((i: any) => i.contentDetails?.videoId).filter(Boolean).join(",")
+      if (ids && !quotaError) {
+        const vRes = await fetch(
+          `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${API_KEY}`,
+          { cache: "no-store" }
+        )
+        const vData = await vRes.json()
+        report.videos = {
+          httpStatus: vRes.status,
+          error: vData.error ? `[${vData.error.errors?.[0]?.reason}] ${vData.error.message}` : null,
+          itemCount: vData.items?.length ?? 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          items: (vData.items ?? []).map((v: any) => ({
+            videoId: v.id,
+            title: v.snippet?.title?.slice(0, 60),
+            liveBroadcastContent: v.snippet?.liveBroadcastContent,
+            duration: v.contentDetails?.duration,
+            durationSec: (() => {
+              const iso: string = v.contentDetails?.duration ?? ""
+              const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+              if (!m) return 0
+              return parseInt(m[1] ?? "0") * 3600 + parseInt(m[2] ?? "0") * 60 + parseInt(m[3] ?? "0")
+            })(),
+            isShort: (() => {
+              const iso: string = v.contentDetails?.duration ?? ""
+              const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+              if (!m) return false
+              const sec = parseInt(m[1] ?? "0") * 3600 + parseInt(m[2] ?? "0") * 60 + parseInt(m[3] ?? "0")
+              return sec < 60
+            })(),
+            isLivestream: v.liveStreamingDetails != null,
+          })),
+        }
+      }
+    } catch (err) {
+      report.playlistItems = { error: String(err) }
+    }
   }
 
-  return NextResponse.json(results, { status: 200 })
+  // ── Diagnosis ────────────────────────────────────────────────────────────────
+  const apiQuotaExceeded = (report.playlistItems as Record<string, unknown> | undefined)?.quotaExceeded === true
+  const rssOk = (report.rss as Record<string, unknown> | undefined)?.ok === true
+
+  report.diagnosis = {
+    apiQuotaExceeded,
+    rssAvailable: rssOk,
+    activeSource: apiQuotaExceeded ? "rss (fallback)" : "api",
+    quotaResetTime: "Midnight Pacific Time (~07:00 UTC / 14:00 Vietnam)",
+    optimizedDailyUsage: "~576 units/day (2 units × 288 cache periods at 5-min TTL)",
+    quotaLimit: "10,000 units/day (free tier)",
+    recommendation: apiQuotaExceeded
+      ? rssOk
+        ? "API quota exhausted but RSS fallback is active — videos ARE showing from RSS. Quota resets at midnight Pacific Time."
+        : "API quota exhausted AND RSS is failing. Check network connectivity."
+      : "API key is working correctly.",
+  }
+
+  return NextResponse.json(report, { status: 200 })
 }

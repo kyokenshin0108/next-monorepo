@@ -4,6 +4,7 @@ const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || "UCg1a2KaW4f7c0ThU3Dbho0A"
 const API_KEY = process.env.YOUTUBE_API_KEY
 const VIDEOS_BASE = "https://www.googleapis.com/youtube/v3/videos"
 const PLAYLIST_BASE = "https://www.googleapis.com/youtube/v3/playlistItems"
+const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`
 
 export interface YouTubeVideo {
   videoId: string
@@ -20,16 +21,16 @@ export interface YouTubeStatus {
   latestVideo: YouTubeVideo | null
   upcomingStreams: YouTubeVideo[]
   recentVideos: YouTubeVideo[]
+  /** "api" when served from YouTube Data API, "rss" when API quota is exhausted */
+  _source?: "api" | "rss"
 }
 
 // ── Node.js in-memory cache ───────────────────────────────────────────────────
-// Prevents repeated API calls in dev (where Next.js data cache is disabled).
-// Each cache miss costs ~2 quota units; 5-min TTL → ≤576 units/day.
 let cachedStatus: YouTubeStatus | null = null
 let cacheExpiresAt = 0
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
-/** Parse ISO 8601 duration (e.g. "PT1M30S") to total seconds */
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function parseDurationSeconds(iso: string): number {
   const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
   if (!m) return 0
@@ -40,13 +41,84 @@ function parseDurationSeconds(iso: string): number {
   )
 }
 
+function decodeXMLEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+}
+
+// ── RSS fallback (0 quota units, always available) ────────────────────────────
+/**
+ * Fetch the channel's 15 most recent videos via YouTube's public Atom feed.
+ * No API key required — zero quota cost.
+ * Limitation: no duration info, so Shorts cannot be filtered by length.
+ */
+async function getVideosFromRSS(limit = 8): Promise<YouTubeVideo[]> {
+  try {
+    const res = await fetch(RSS_URL, { cache: "no-store" })
+    if (!res.ok) {
+      console.error(`[YouTube] RSS fetch failed: HTTP ${res.status}`)
+      return []
+    }
+    const xml = await res.text()
+
+    const results: YouTubeVideo[] = []
+    let parsed = 0
+    for (const entryMatch of xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)) {
+      if (results.length >= limit) break
+      const entry = entryMatch[1]
+      parsed++
+
+      const videoId = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/)?.[1]?.trim()
+      if (!videoId) continue
+
+      // YouTube RSS exposes the canonical URL in <link rel="alternate" href="...">
+      // Shorts URLs contain "/shorts/", regular videos contain "/watch?v="
+      // This lets us filter Shorts without any API call.
+      const linkHref = entry.match(/<link rel="alternate" href="(.*?)"/)?.[1] ?? ""
+      const isShort = linkHref.includes("/shorts/")
+      if (isShort) {
+        console.log(`[YouTube] RSS: skipping Short ${videoId}`)
+        continue
+      }
+
+      // <title> appears once per entry (the media:title duplicate comes later)
+      const title = decodeXMLEntities(
+        entry.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? ""
+      )
+      const published = entry.match(/<published>(.*?)<\/published>/)?.[1]?.trim() ?? ""
+      const thumbnail = entry.match(/<media:thumbnail url="(.*?)"/)?.[1]?.trim() ?? ""
+      const description = decodeXMLEntities(
+        entry.match(/<media:description>([\s\S]*?)<\/media:description>/)?.[1]?.trim() ?? ""
+      )
+      const channelTitle = decodeXMLEntities(
+        entry.match(/<name>(.*?)<\/name>/)?.[1]?.trim() ?? "TheStockHunters"
+      )
+
+      results.push({ videoId, title, description, thumbnail, publishedAt: published, channelTitle })
+    }
+
+    console.log(`[YouTube] RSS: ${results.length} regular videos out of ${parsed} entries`)
+    return results
+  } catch (err) {
+    console.error("[YouTube] RSS fetch error:", err)
+    return []
+  }
+}
+
+// ── YouTube Data API helpers (total: 2 quota units per call pair) ─────────────
+
 /**
  * Check if the channel is currently live.
- *
  * Cost: playlistItems.list (1 unit) + videos.list (1 unit) = 2 units.
- * Previously used search.list (100 units) — 50× cheaper.
+ * Returns null on quota error so the caller can fall back gracefully.
  */
-async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVideo | null }> {
+async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVideo | null } | null> {
+  if (!API_KEY) return null
   const uploadsPlaylistId = CHANNEL_ID.replace(/^UC/, "UU")
 
   const playlistRes = await fetch(
@@ -56,8 +128,9 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
   const playlistData = await playlistRes.json()
 
   if (playlistData.error) {
-    console.error("[YouTube] getLiveStatus › playlistItems error:", JSON.stringify(playlistData.error))
-    return { isLive: false, liveVideo: null }
+    const reason = playlistData.error.errors?.[0]?.reason ?? "unknown"
+    console.error(`[YouTube] getLiveStatus › playlistItems error (${reason}):`, playlistData.error.message)
+    return null // signal: quota or auth error
   }
 
   const latestVideoId = playlistData.items?.[0]?.contentDetails?.videoId as string | undefined
@@ -70,16 +143,16 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
   const videoData = await videoRes.json()
 
   if (videoData.error) {
-    console.error("[YouTube] getLiveStatus › videos error:", JSON.stringify(videoData.error))
-    return { isLive: false, liveVideo: null }
+    const reason = videoData.error.errors?.[0]?.reason ?? "unknown"
+    console.error(`[YouTube] getLiveStatus › videos error (${reason}):`, videoData.error.message)
+    return null
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const video = videoData.items?.[0] as any
-  if (!video) return { isLive: false, liveVideo: null }
-
-  const isLive = video.snippet?.liveBroadcastContent === "live"
-  if (!isLive) return { isLive: false, liveVideo: null }
+  if (!video || video.snippet?.liveBroadcastContent !== "live") {
+    return { isLive: false, liveVideo: null }
+  }
 
   return {
     isLive: true,
@@ -98,12 +171,12 @@ async function getLiveStatus(): Promise<{ isLive: boolean; liveVideo: YouTubeVid
 }
 
 /**
- * Fetch up to `limit` regular (non-Short, non-livestream) videos from the channel.
- *
- * Cost: playlistItems.list (1 unit) + videos.list batch (1 unit) = 2 units total.
- * Filters: liveStreamingDetails present → skip (was/is livestream), duration < 60 s → skip (Short).
+ * Fetch up to `limit` regular (non-Short, non-livestream) videos.
+ * Cost: playlistItems.list (1 unit) + videos.list batch (1 unit) = 2 units.
+ * Returns null on quota/auth error so the caller can fall back to RSS.
  */
-async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
+async function getRecentRegularVideos(limit = 8): Promise<YouTubeVideo[] | null> {
+  if (!API_KEY) return null
   const uploadsPlaylistId = CHANNEL_ID.replace(/^UC/, "UU")
 
   const playlistRes = await fetch(
@@ -113,8 +186,9 @@ async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
   const playlistData = await playlistRes.json()
 
   if (playlistData.error) {
-    console.error("[YouTube] getRecentRegularVideos › playlistItems error:", JSON.stringify(playlistData.error))
-    return []
+    const reason = playlistData.error.errors?.[0]?.reason ?? "unknown"
+    console.error(`[YouTube] getRecentRegularVideos › playlistItems error (${reason}):`, playlistData.error.message)
+    return null // signal: quota or auth error
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,8 +206,9 @@ async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
   const detailsData = await detailsRes.json()
 
   if (detailsData.error) {
-    console.error("[YouTube] getRecentRegularVideos › videos error:", JSON.stringify(detailsData.error))
-    return []
+    const reason = detailsData.error.errors?.[0]?.reason ?? "unknown"
+    console.error(`[YouTube] getRecentRegularVideos › videos error (${reason}):`, detailsData.error.message)
+    return null
   }
 
   const results: YouTubeVideo[] = []
@@ -141,9 +216,7 @@ async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
   for (const item of detailsData.items ?? [] as any[]) {
     if (results.length >= limit) break
     if (item.liveStreamingDetails != null) continue
-    const durationSecs = parseDurationSeconds((item.contentDetails?.duration as string) ?? "")
-    if (durationSecs < 60) continue
-
+    if (parseDurationSeconds((item.contentDetails?.duration as string) ?? "") < 60) continue
     results.push({
       videoId: item.id as string,
       title: item.snippet?.title ?? "",
@@ -157,65 +230,65 @@ async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
     })
   }
 
-  console.log(`[YouTube] getRecentRegularVideos: ${results.length}/${ids.length} videos after filtering`)
+  console.log(`[YouTube] API: ${results.length}/${ids.length} videos after filtering`)
   return results
 }
 
-export async function GET() {
-  if (!API_KEY) {
-    console.error("[YouTube] YOUTUBE_API_KEY is not set")
-    return NextResponse.json({ error: "Missing YOUTUBE_API_KEY" }, { status: 500 })
-  }
+// ── Route handler ─────────────────────────────────────────────────────────────
 
-  // ── Serve from cache if still valid ──────────────────────────────────────
+export async function GET() {
+  // ── Serve from cache if still valid ────────────────────────────────────────
   if (cachedStatus && Date.now() < cacheExpiresAt) {
     const ttlSec = Math.round((cacheExpiresAt - Date.now()) / 1000)
-    console.log(`[YouTube] Cache hit — expires in ${ttlSec}s`)
+    console.log(`[YouTube] Cache hit (${cachedStatus._source ?? "?"}) — ${ttlSec}s remaining`)
     return NextResponse.json(cachedStatus)
   }
 
-  console.log("[YouTube] Cache miss — calling YouTube API")
+  console.log("[YouTube] Cache miss — fetching fresh data")
 
-  try {
-    // ── Check live status (2 quota units, no search.list) ─────────────────
-    const { isLive, liveVideo } = await getLiveStatus()
+  // ── Try YouTube Data API first ──────────────────────────────────────────────
+  const [liveResult, apiVideos] = await Promise.all([
+    getLiveStatus(),
+    getRecentRegularVideos(8),
+  ])
 
-    if (isLive && liveVideo) {
-      const recentVideos = await getRecentRegularVideos(7)
-      const result: YouTubeStatus = {
-        isLive: true,
-        liveVideo,
-        latestVideo: null,
-        upcomingStreams: [],
-        recentVideos,
-      }
-      cachedStatus = result
-      cacheExpiresAt = Date.now() + 60_000 // 1 min when live
-      console.log("[YouTube] Channel is LIVE — cached for 1 min")
-      return NextResponse.json(result)
-    }
+  const apiWorking = liveResult !== null && apiVideos !== null
 
-    // ── Not live — fetch regular videos (2 quota units) ───────────────────
-    // upcomingStreams removed: search.list costs 100 units/call.
-    // Upcoming schedule is already visible via Google Calendar on the page.
-    const allRegularVideos = await getRecentRegularVideos(8)
+  if (apiWorking) {
+    // API is healthy — build full response
+    const { isLive, liveVideo } = liveResult!
+    const allVideos = apiVideos!
 
     const result: YouTubeStatus = {
-      isLive: false,
-      liveVideo: null,
-      latestVideo: allRegularVideos[0] ?? null,
+      isLive,
+      liveVideo: isLive ? liveVideo : null,
+      latestVideo: isLive ? null : (allVideos[0] ?? null),
       upcomingStreams: [],
-      recentVideos: allRegularVideos.slice(1),
+      recentVideos: isLive ? allVideos : allVideos.slice(1),
+      _source: "api",
     }
 
     cachedStatus = result
-    cacheExpiresAt = Date.now() + CACHE_TTL_MS
-    console.log(
-      `[YouTube] Not live — ${allRegularVideos.length} regular videos fetched, cached for 5 min`
-    )
+    cacheExpiresAt = Date.now() + (isLive ? 60_000 : CACHE_TTL_MS)
+    console.log(`[YouTube] API source — isLive=${isLive}, ${allVideos.length} videos, cached ${isLive ? "1min" : "5min"}`)
     return NextResponse.json(result)
-  } catch (err) {
-    console.error("[YouTube] Unexpected error:", err)
-    return NextResponse.json({ error: "Failed to fetch YouTube data" }, { status: 500 })
   }
+
+  // ── API quota exhausted — fall back to RSS ─────────────────────────────────
+  console.warn("[YouTube] API unavailable (quota/auth error) — falling back to RSS feed")
+  const rssVideos = await getVideosFromRSS(8)
+
+  const result: YouTubeStatus = {
+    isLive: false, // cannot determine without API
+    liveVideo: null,
+    latestVideo: rssVideos[0] ?? null,
+    upcomingStreams: [],
+    recentVideos: rssVideos.slice(1),
+    _source: "rss",
+  }
+
+  cachedStatus = result
+  cacheExpiresAt = Date.now() + CACHE_TTL_MS
+  console.log(`[YouTube] RSS source — ${rssVideos.length} videos, cached 5min`)
+  return NextResponse.json(result)
 }
