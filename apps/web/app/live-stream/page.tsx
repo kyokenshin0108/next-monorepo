@@ -413,83 +413,141 @@ export default function LiveStream() {
                   </div>
                 </div>
               </div>
-              {/* Live Chat */}
+              {/* Sidebar: Live Chat when live, Recent Videos when not live */}
               <div className="w-full lg:w-1/4">
-                <div className="bg-white rounded-lg h-[400px] overflow-hidden flex flex-col">
-                  <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
-                    <h3 className="font-semibold">Trò Chuyện Trực Tiếp</h3>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <i className="ri-user-line text-blue-600"></i>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">Nguyễn Minh Tuấn</span>
-                          <span className="text-xs text-gray-500">19:32</span>
-                        </div>
-                        <p className="text-sm text-gray-700">Chào anh Minh, hôm nay anh đánh giá thế nào về cổ phiếu VCB?</p>
-                      </div>
+                {youtubeStatus?.isLive && youtubeStatus.liveVideo ? (
+                  /* ── Live Chat (shown only during live stream) ── */
+                  <div className="bg-white rounded-lg h-[400px] overflow-hidden flex flex-col">
+                    <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                      <h3 className="font-semibold">Trò Chuyện Trực Tiếp</h3>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <i className="ri-user-line text-green-600"></i>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">Trần Thị Mai</span>
-                          <span className="text-xs text-gray-500">19:33</span>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                      {[
+                        { color: "blue", name: "Nguyễn Minh Tuấn", time: "19:32", msg: "Chào anh Minh, hôm nay anh đánh giá thế nào về cổ phiếu VCB?" },
+                        { color: "green", name: "Trần Thị Mai", time: "19:33", msg: "Nhóm ngân hàng tuần này có khả năng tăng không anh?" },
+                        { color: "purple", name: "Lê Văn Hùng", time: "19:35", msg: "Anh có thể phân tích thêm về tác động của lãi suất FED đến TTCK Việt Nam không?" },
+                        { color: "yellow", name: "Phạm Thị Ngọc", time: "19:37", msg: "Cảm ơn anh vì những phân tích rất chi tiết và hữu ích!" },
+                        { color: "red", name: "Đỗ Thanh Tùng", time: "19:39", msg: "Anh đánh giá thế nào về nhóm cổ phiếu bán lẻ trong thời gian tới?" },
+                      ].map((m, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <div className={`w-8 h-8 rounded-full bg-${m.color}-100 flex items-center justify-center flex-shrink-0`}>
+                            <i className={`ri-user-line text-${m.color}-600`}></i>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{m.name}</span>
+                              <span className="text-xs text-gray-500">{m.time}</span>
+                            </div>
+                            <p className="text-sm text-gray-700">{m.msg}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-700">Nhóm ngân hàng tuần này có khả năng tăng không anh?</p>
-                      </div>
+                      ))}
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <i className="ri-user-line text-purple-600"></i>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">Lê Văn Hùng</span>
-                          <span className="text-xs text-gray-500">19:35</span>
-                        </div>
-                        <p className="text-sm text-gray-700">Anh có thể phân tích thêm về tác động của lãi suất FED đến TTCK Việt Nam không?</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                        <i className="ri-user-line text-yellow-600"></i>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">Phạm Thị Ngọc</span>
-                          <span className="text-xs text-gray-500">19:37</span>
-                        </div>
-                        <p className="text-sm text-gray-700">Cảm ơn anh vì những phân tích rất chi tiết và hữu ích!</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                        <i className="ri-user-line text-red-600"></i>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">Đỗ Thanh Tùng</span>
-                          <span className="text-xs text-gray-500">19:39</span>
-                        </div>
-                        <p className="text-sm text-gray-700">Anh đánh giá thế nào về nhóm cổ phiếu bán lẻ trong thời gian tới?</p>
+                    <div className="p-3 border-t border-gray-200">
+                      <div className="relative">
+                        <input type="text" placeholder="Nhập tin nhắn..." className="w-full py-2 pl-3 pr-10 rounded-full bg-gray-100 text-sm border-none" />
+                        <button className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center text-primary">
+                          <i className="ri-send-plane-fill"></i>
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 border-t border-gray-200">
-                    <div className="relative">
-                      <input type="text" placeholder="Nhập tin nhắn..." className="w-full py-2 pl-3 pr-10 rounded-full bg-gray-100 text-sm border-none" />
-                      <button className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center text-primary">
-                        <i className="ri-send-plane-fill"></i>
-                      </button>
+                ) : (
+                  /* ── Recent Videos (shown when not live) ── */
+                  <div className="bg-white rounded-lg overflow-hidden flex flex-col" style={{ height: "400px" }}>
+                    <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                      <div className="flex items-center gap-2">
+                        <i className="ri-youtube-fill text-red-600"></i>
+                        <h3 className="font-semibold text-sm">Video Nổi Bật</h3>
+                      </div>
+                      <a
+                        href="https://www.youtube.com/@TheStockHunters"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Xem tất cả
+                      </a>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      {youtubeLoading ? (
+                        /* Skeleton loading */
+                        <div className="p-3 space-y-3">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex gap-2 animate-pulse">
+                              <div className="w-20 h-14 bg-gray-200 rounded flex-shrink-0"></div>
+                              <div className="flex-1 space-y-1.5 py-0.5">
+                                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-2.5 bg-gray-200 rounded w-1/2 mt-1"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : youtubeStatus?.recentVideos && youtubeStatus.recentVideos.length > 0 ? (
+                        <div className="p-3 space-y-2">
+                          {youtubeStatus.recentVideos.map((video) => (
+                            <a
+                              key={video.videoId}
+                              href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex gap-2 group hover:bg-gray-50 rounded-lg p-1 transition"
+                            >
+                              {/* Thumbnail */}
+                              <div className="relative w-20 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-200">
+                                {video.thumbnail ? (
+                                  <img
+                                    src={video.thumbnail}
+                                    alt={video.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <i className="ri-youtube-fill text-red-400 text-xl"></i>
+                                  </div>
+                                )}
+                                {/* Play icon overlay */}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                                  <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                    <i className="ri-play-fill text-gray-800 text-xs"></i>
+                                  </div>
+                                </div>
+                              </div>
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-900 line-clamp-2 group-hover:text-primary transition leading-tight">
+                                  {video.title}
+                                </p>
+                                <p className="text-[11px] text-gray-400 mt-1">
+                                  {new Date(video.publishedAt).toLocaleDateString("vi-VN", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}
+                                </p>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
+                          <i className="ri-youtube-fill text-red-400 text-3xl mb-2"></i>
+                          <p className="text-sm">Không tải được video.</p>
+                          <a
+                            href="https://www.youtube.com/@TheStockHunters"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline mt-1"
+                          >
+                            Xem trên YouTube
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

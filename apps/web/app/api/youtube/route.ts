@@ -17,6 +17,7 @@ export interface YouTubeStatus {
   liveVideo: YouTubeVideo | null
   latestVideo: YouTubeVideo | null
   upcomingStreams: YouTubeVideo[]
+  recentVideos: YouTubeVideo[]
 }
 
 function mapSnippet(item: { id: { videoId: string }; snippet: { title: string; description: string; thumbnails: { high?: { url: string }; medium?: { url: string } }; publishedAt: string; channelTitle: string } }): YouTubeVideo {
@@ -47,17 +48,23 @@ export async function GET() {
     const liveItems = liveData.items || []
 
     if (liveItems.length > 0) {
-      // Channel is live
+      // Channel is live — also fetch recent videos for sidebar fallback
+      const recentRes = await fetch(
+        `${base}?part=snippet&channelId=${CHANNEL_ID}&order=date&type=video&maxResults=7&key=${API_KEY}`,
+        { next: { revalidate: 300 } }
+      )
+      const recentData = await recentRes.json()
       return NextResponse.json({
         isLive: true,
         liveVideo: mapSnippet(liveItems[0]),
         latestVideo: null,
         upcomingStreams: [],
+        recentVideos: (recentData.items || []).map(mapSnippet),
       } as YouTubeStatus)
     }
 
-    // Not live — fetch latest video and upcoming streams in parallel
-    const [latestRes, upcomingRes] = await Promise.all([
+    // Not live — fetch latest video, upcoming streams, and recent videos in parallel
+    const [latestRes, upcomingRes, recentRes] = await Promise.all([
       fetch(
         `${base}?part=snippet&channelId=${CHANNEL_ID}&order=date&type=video&maxResults=1&key=${API_KEY}`,
         { next: { revalidate: 300 } }
@@ -66,18 +73,26 @@ export async function GET() {
         `${base}?part=snippet&channelId=${CHANNEL_ID}&eventType=upcoming&type=video&order=date&maxResults=5&key=${API_KEY}`,
         { next: { revalidate: 300 } }
       ),
+      fetch(
+        `${base}?part=snippet&channelId=${CHANNEL_ID}&order=date&type=video&maxResults=7&key=${API_KEY}`,
+        { next: { revalidate: 300 } }
+      ),
     ])
 
-    const [latestData, upcomingData] = await Promise.all([latestRes.json(), upcomingRes.json()])
+    const [latestData, upcomingData, recentData] = await Promise.all([
+      latestRes.json(), upcomingRes.json(), recentRes.json(),
+    ])
 
     const latestItems = latestData.items || []
     const upcomingItems = upcomingData.items || []
+    const recentItems = recentData.items || []
 
     return NextResponse.json({
       isLive: false,
       liveVideo: null,
       latestVideo: latestItems.length > 0 ? mapSnippet(latestItems[0]) : null,
       upcomingStreams: upcomingItems.map(mapSnippet),
+      recentVideos: recentItems.map(mapSnippet),
     } as YouTubeStatus)
   } catch (err) {
     console.error("YouTube API error:", err)
