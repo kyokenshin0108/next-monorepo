@@ -130,7 +130,7 @@ export default function LiveStream() {
                     <>
                       <iframe
                         className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${youtubeStatus.liveVideo.videoId}?autoplay=1&mute=0`}
+                        src={`https://www.youtube.com/embed/${youtubeStatus.liveVideo.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
                         frameBorder="0"
                         allowFullScreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -146,7 +146,7 @@ export default function LiveStream() {
                     <>
                       <iframe
                         className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${youtubeStatus.latestVideo.videoId}`}
+                        src={`https://www.youtube.com/embed/${youtubeStatus.latestVideo.videoId}?rel=0&modestbranding=1`}
                         frameBorder="0"
                         allowFullScreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

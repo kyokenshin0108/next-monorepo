@@ -48,69 +48,79 @@ function parseDurationSeconds(iso: string): number {
   )
 }
 
+const PLAYLIST_BASE = "https://www.googleapis.com/youtube/v3/playlistItems"
+
 /**
  * Fetch up to `limit` regular (non-Short, non-livestream) videos from the channel.
  *
- * Strategy:
- *  1. Search for 20 recent videos (type=video, order=date).
- *  2. Discard any where liveBroadcastContent !== 'none' (active live / upcoming).
- *  3. Batch-call Videos API (contentDetails + liveStreamingDetails) for the rest.
- *  4. Discard if liveStreamingDetails exists (was/is a livestream).
- *  5. Discard if duration < 60 s (YouTube Short).
- *  6. Return the first `limit` survivors.
+ * Strategy (quota-efficient — 2 units total instead of 100+):
+ *  1. playlistItems.list on the uploads playlist (UC→UU prefix) — 1 unit, maxResults=20.
+ *  2. Batch-call Videos API (contentDetails + liveStreamingDetails) for all IDs — 1 unit.
+ *  3. Discard if liveStreamingDetails exists (was/is a livestream).
+ *  4. Discard if duration < 60 s (YouTube Short).
+ *  5. Return the first `limit` survivors.
  */
 async function getRecentRegularVideos(limit = 7): Promise<YouTubeVideo[]> {
-  // Step 1 — search
-  const searchRes = await fetch(
-    `${SEARCH_BASE}?part=snippet&channelId=${CHANNEL_ID}&order=date&type=video&maxResults=20&key=${API_KEY}`,
+  // Uploads playlist: replace leading "UC" with "UU"
+  const uploadsPlaylistId = CHANNEL_ID.replace(/^UC/, "UU")
+
+  // Step 1 — fetch playlist items (1 quota unit)
+  const playlistRes = await fetch(
+    `${PLAYLIST_BASE}?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`,
     { next: { revalidate: 300 } }
   )
-  const searchData = await searchRes.json()
+  const playlistData = await playlistRes.json()
+
+  if (playlistData.error) {
+    console.error("YouTube playlistItems error:", playlistData.error)
+    return []
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const searchItems: any[] = searchData.items ?? []
+  const playlistItems: any[] = playlistData.items ?? []
+  if (playlistItems.length === 0) return []
 
-  // Step 2 — keep only completed (non-live, non-upcoming) from search metadata
-  const candidates = searchItems.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (item: any) => item.snippet?.liveBroadcastContent === "none"
-  )
+  // Extract video IDs
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ids = playlistItems.map((item: any) => item.contentDetails?.videoId as string).filter(Boolean)
+  if (ids.length === 0) return []
 
-  if (candidates.length === 0) return []
-
-  // Step 3 — batch fetch content details
-  const ids = candidates
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((item: any) => item.id.videoId as string)
-    .join(",")
-
+  // Step 2 — batch fetch contentDetails + liveStreamingDetails (1 quota unit)
   const detailsRes = await fetch(
-    `${VIDEOS_BASE}?part=contentDetails,liveStreamingDetails&id=${ids}&key=${API_KEY}`,
+    `${VIDEOS_BASE}?part=snippet,contentDetails,liveStreamingDetails&id=${ids.join(",")}&key=${API_KEY}`,
     { next: { revalidate: 300 } }
   )
   const detailsData = await detailsRes.json()
 
-  // Build a lookup map: videoId → { durationSecs, wasLivestream }
-  const detailsMap = new Map<string, { durationSecs: number; wasLivestream: boolean }>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const item of detailsData.items ?? [] as any[]) {
-    detailsMap.set(item.id as string, {
-      durationSecs: parseDurationSeconds(
-        (item.contentDetails?.duration as string) ?? ""
-      ),
-      // liveStreamingDetails is only present on livestream videos
-      wasLivestream: item.liveStreamingDetails != null,
-    })
+  if (detailsData.error) {
+    console.error("YouTube videos error:", detailsData.error)
+    return []
   }
 
-  // Steps 4 & 5 — filter and collect up to `limit`
+  // Steps 3 & 4 — filter and collect up to `limit`
   const results: YouTubeVideo[] = []
-  for (const item of candidates) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const item of detailsData.items ?? [] as any[]) {
     if (results.length >= limit) break
-    const details = detailsMap.get(item.id.videoId as string)
-    if (!details) continue                   // details missing → skip
-    if (details.wasLivestream) continue      // was a livestream → skip
-    if (details.durationSecs < 60) continue  // Short (< 60 s) → skip
-    results.push(mapSearchItem(item))
+    // Skip livestreams (liveStreamingDetails is only present on livestream videos)
+    if (item.liveStreamingDetails != null) continue
+    // Skip Shorts (duration < 60 s)
+    const durationSecs = parseDurationSeconds(
+      (item.contentDetails?.duration as string) ?? ""
+    )
+    if (durationSecs < 60) continue
+
+    results.push({
+      videoId: item.id as string,
+      title: item.snippet?.title ?? "",
+      description: item.snippet?.description ?? "",
+      thumbnail:
+        item.snippet?.thumbnails?.high?.url ||
+        item.snippet?.thumbnails?.medium?.url ||
+        "",
+      publishedAt: item.snippet?.publishedAt ?? "",
+      channelTitle: item.snippet?.channelTitle ?? "",
+    })
   }
 
   return results
