@@ -202,8 +202,8 @@ export default function HomeClient({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredAnalysis.map((post) => (
                 <div key={post.id} className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                  {post.thumbnail_url ? (
-                    <img src={post.thumbnail_url} alt={post.title} className="w-full h-48 object-cover" />
+                  {post.featured_image_url ? (
+                    <img src={post.featured_image_url} alt={post.title} className="w-full h-48 object-cover" />
                   ) : (
                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                       <i className="ri-line-chart-line text-4xl text-gray-400"></i>
