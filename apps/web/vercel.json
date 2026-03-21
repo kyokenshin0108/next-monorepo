@@ -5,6 +5,10 @@
   "installCommand": "cd ../.. && npm install",
   "crons": [
     {
+      "path": "/api/aggregator/rss",
+      "schedule": "0 * * * *"
+    },
+    {
       "path": "/api/cron/fetch-news",
       "schedule": "0 6 * * *"
     },

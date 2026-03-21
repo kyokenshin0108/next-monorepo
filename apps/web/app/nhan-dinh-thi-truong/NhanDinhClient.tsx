@@ -2,6 +2,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import type { MarketAnalysis } from "@/lib/market-analysis/queries"
+import type { NewsArticle } from "@/lib/news/types"
+import AnalysisCard from "@/components/analysis/AnalysisCard"
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("vi-VN", {
@@ -179,7 +181,13 @@ function Empty({ label }: { label: string }) {
 
 // ── Main component ────────────────────────────────────────────────
 
-export default function NhanDinhClient({ posts }: { posts: MarketAnalysis[] }) {
+export default function NhanDinhClient({
+  posts,
+  newsArticles = [],
+}: {
+  posts: MarketAnalysis[]
+  newsArticles?: NewsArticle[]
+}) {
   const [activeTab, setActiveTab] = useState("articles")
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [showDateDropdown, setShowDateDropdown] = useState(false)
@@ -230,6 +238,7 @@ export default function NhanDinhClient({ posts }: { posts: MarketAnalysis[] }) {
               { id: "articles", label: "Bài viết phân tích" },
               { id: "videos",   label: "Videos" },
               { id: "shorts",   label: "Shorts" },
+              { id: "news",     label: `Tin Tức Tổng Hợp${newsArticles.length > 0 ? ` (${newsArticles.length})` : ""}` },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -424,6 +433,36 @@ export default function NhanDinhClient({ posts }: { posts: MarketAnalysis[] }) {
             ) : (
               <div className="grid grid-cols-3"><Empty label="short video" /></div>
             )
+          )}
+
+          {/* News tab */}
+          {activeTab === "news" && (
+            <div>
+              {newsArticles.length > 0 ? (
+                <>
+                  {/* Featured news article */}
+                  {newsArticles[0] && (
+                    <div className="mb-6">
+                      <AnalysisCard article={newsArticles[0]} featured />
+                    </div>
+                  )}
+                  {/* News grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {newsArticles.slice(1).map((a) => (
+                      <AnalysisCard key={a.id} article={a} />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="col-span-3 py-16 text-center text-gray-400">
+                  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4 text-5xl">
+                    <i className="ri-newspaper-line"></i>
+                  </div>
+                  <p className="text-lg font-medium">Đang cập nhật nội dung...</p>
+                  <p className="text-sm mt-1">Tin tức sẽ được tổng hợp tự động mỗi giờ.</p>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="mt-8 text-center">

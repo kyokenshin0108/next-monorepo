@@ -4,6 +4,10 @@ import { ingestAllSources } from "@/lib/news/ingest"
 export const runtime = "nodejs"
 export const maxDuration = 60
 
+export async function GET(req: NextRequest) {
+  return POST(req)
+}
+
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   const cronSecret = process.env.CRON_SECRET
