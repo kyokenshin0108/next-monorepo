@@ -3,9 +3,9 @@ import Navbar from "@/components/shared/Navbar"
 import Footer from "@/components/shared/Footer"
 
 export const metadata: Metadata = {
-  title: "Data Deletion Instructions - TheStockHunters",
+  title: "Hướng Dẫn Xóa Dữ Liệu - TheStockHunters",
   description:
-    "Learn how to request the deletion of your account and all personal data from TheStockHunters, including data obtained via Facebook Login.",
+    "Tìm hiểu cách yêu cầu xóa tài khoản và toàn bộ dữ liệu cá nhân khỏi TheStockHunters, bao gồm dữ liệu được thu thập qua Facebook Login.",
   robots: { index: true, follow: true },
 }
 
@@ -24,52 +24,52 @@ export default function DataDeletionPage() {
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Data Deletion Instructions
+                Hướng Dẫn Xóa Dữ Liệu
               </h1>
               <p className="text-gray-600 text-lg mb-4">
-                You have the right to request the deletion of your account and all personal data held by
-                TheStockHunters at any time.
+                Bạn có quyền yêu cầu xóa tài khoản và toàn bộ dữ liệu cá nhân mà TheStockHunters lưu giữ
+                bất kỳ lúc nào.
               </p>
-              <p className="text-gray-500 text-sm">Last updated: March 21, 2026</p>
+              <p className="text-gray-500 text-sm">Cập nhật lần cuối: 21/03/2026</p>
             </div>
           </div>
         </section>
 
-        {/* Content */}
+        {/* Nội dung */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto space-y-10">
 
-              {/* Overview */}
+              {/* Tổng quan */}
               <div className="bg-white p-8 rounded-lg shadow-sm">
                 <p className="text-gray-700 leading-relaxed">
-                  TheStockHunters respects your right to privacy and data ownership. This page explains how
-                  to request the deletion of your account and all associated personal data, including any
-                  information collected via Facebook Login (name, email address, and profile picture).
+                  TheStockHunters tôn trọng quyền riêng tư và quyền sở hữu dữ liệu của bạn. Trang này
+                  hướng dẫn cách yêu cầu xóa tài khoản và toàn bộ dữ liệu cá nhân liên quan, bao gồm
+                  thông tin được thu thập qua Facebook Login (họ tên, địa chỉ email và ảnh đại diện).
                 </p>
               </div>
 
-              {/* How to Request Deletion */}
+              {/* Cách yêu cầu xóa */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-mail-send-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">How to Request Deletion</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Cách Yêu Cầu Xóa Dữ Liệu</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-8">
-                    Follow these simple steps to submit a data deletion request:
+                    Thực hiện các bước đơn giản sau để gửi yêu cầu xóa dữ liệu:
                   </p>
                   <div className="space-y-6">
                     {[
                       {
                         step: "1",
                         icon: "ri-mail-open-line",
-                        title: "Compose an Email",
+                        title: "Soạn Email",
                         desc: (
                           <>
-                            Open your email client and compose a new message to{" "}
+                            Mở ứng dụng email và soạn tin nhắn mới gửi đến{" "}
                             <a
                               href="mailto:stock.hunter.info@gmail.com?subject=Delete My Account"
                               className="text-primary font-medium hover:underline"
@@ -83,33 +83,32 @@ export default function DataDeletionPage() {
                       {
                         step: "2",
                         icon: "ri-edit-line",
-                        title: 'Use the Subject Line: "Delete My Account"',
+                        title: 'Đặt Tiêu Đề: "Delete My Account"',
                         desc: (
                           <>
-                            Set the email subject to exactly: <strong>"Delete My Account"</strong>. This
-                            ensures your request is correctly routed to our data management team.
+                            Đặt tiêu đề email chính xác là: <strong>"Delete My Account"</strong>. Điều này
+                            giúp yêu cầu của bạn được chuyển đến đúng bộ phận quản lý dữ liệu.
                           </>
                         ),
                       },
                       {
                         step: "3",
                         icon: "ri-user-line",
-                        title: "Include Your Account Details",
+                        title: "Cung Cấp Thông Tin Tài Khoản",
                         desc: (
                           <>
-                            In the body of the email, include the name and email address associated with
-                            your TheStockHunters account so we can locate and verify your data.
+                            Trong nội dung email, hãy ghi rõ họ tên và địa chỉ email liên kết với tài khoản
+                            TheStockHunters của bạn để chúng tôi có thể xác minh và xử lý yêu cầu.
                           </>
                         ),
                       },
                       {
                         step: "4",
                         icon: "ri-send-plane-line",
-                        title: "Send Your Request",
+                        title: "Gửi Yêu Cầu",
                         desc: (
                           <>
-                            Send the email. You will receive a confirmation reply acknowledging that your
-                            request has been received.
+                            Gửi email. Bạn sẽ nhận được email xác nhận rằng yêu cầu của bạn đã được tiếp nhận.
                           </>
                         ),
                       },
@@ -131,33 +130,33 @@ export default function DataDeletionPage() {
                       className="inline-flex items-center bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition"
                     >
                       <i className="ri-mail-send-line mr-2"></i>
-                      Send Deletion Request
+                      Gửi Yêu Cầu Xóa Dữ Liệu
                     </a>
                   </div>
                 </div>
               </div>
 
-              {/* What Data Will Be Deleted */}
+              {/* Dữ liệu sẽ bị xóa */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-database-2-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">What Data Will Be Deleted</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Dữ Liệu Sẽ Được Xóa</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    Upon processing your deletion request, we will permanently remove all personal data
-                    associated with your account, including:
+                    Sau khi xử lý yêu cầu, chúng tôi sẽ xóa vĩnh viễn toàn bộ dữ liệu cá nhân liên quan
+                    đến tài khoản của bạn, bao gồm:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
-                      { icon: "ri-user-line", label: "Full name" },
-                      { icon: "ri-mail-line", label: "Email address" },
-                      { icon: "ri-image-line", label: "Profile picture" },
-                      { icon: "ri-login-circle-line", label: "Login history and session records" },
-                      { icon: "ri-settings-line", label: "Account preferences and settings" },
-                      { icon: "ri-history-line", label: "Activity logs and usage data" },
+                      { icon: "ri-user-line", label: "Họ và tên" },
+                      { icon: "ri-mail-line", label: "Địa chỉ email" },
+                      { icon: "ri-image-line", label: "Ảnh đại diện" },
+                      { icon: "ri-login-circle-line", label: "Lịch sử đăng nhập và hồ sơ phiên" },
+                      { icon: "ri-settings-line", label: "Tùy chỉnh và cài đặt tài khoản" },
+                      { icon: "ri-history-line", label: "Nhật ký hoạt động và dữ liệu sử dụng" },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center p-4 bg-gray-50 rounded-lg">
                         <div className="w-8 h-8 flex items-center justify-center text-primary mr-3 flex-shrink-0">
@@ -169,43 +168,43 @@ export default function DataDeletionPage() {
                   </div>
                   <div className="mt-6 p-4 bg-primary/5 rounded-lg">
                     <p className="text-gray-700 text-sm">
-                      <strong>Note:</strong> We may retain certain non-personal, anonymised, or aggregated
-                      data that cannot be used to identify you, as well as any information required to be
-                      retained by applicable law.
+                      <strong>Lưu ý:</strong> Chúng tôi có thể giữ lại một số dữ liệu phi cá nhân, đã ẩn
+                      danh hoặc tổng hợp không thể dùng để xác định danh tính bạn, cũng như thông tin bắt
+                      buộc phải lưu giữ theo quy định pháp luật.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Timeline */}
+              {/* Thời gian xử lý */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-time-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Timeline</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Thời Gian Xử Lý</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <div className="space-y-6">
                     {[
                       {
                         icon: "ri-checkbox-circle-line",
-                        title: "Acknowledgement",
-                        desc: "You will receive a confirmation email within 2 business days acknowledging that your deletion request has been received and is being processed.",
+                        title: "Xác Nhận Tiếp Nhận",
+                        desc: "Bạn sẽ nhận được email xác nhận trong vòng 2 ngày làm việc, thông báo rằng yêu cầu xóa dữ liệu của bạn đã được tiếp nhận và đang được xử lý.",
                         color: "text-green-600",
                         bg: "bg-green-50",
                       },
                       {
                         icon: "ri-time-line",
-                        title: "Processing — within 30 days",
-                        desc: "All personal data associated with your account will be permanently deleted from our systems within 30 days of receiving your request.",
+                        title: "Xử Lý — Trong Vòng 30 Ngày",
+                        desc: "Toàn bộ dữ liệu cá nhân liên quan đến tài khoản của bạn sẽ được xóa vĩnh viễn khỏi hệ thống trong vòng 30 ngày kể từ khi nhận được yêu cầu.",
                         color: "text-primary",
                         bg: "bg-primary/5",
                       },
                       {
                         icon: "ri-mail-check-line",
-                        title: "Deletion Confirmed",
-                        desc: "Once the deletion is complete, we will send you a final confirmation email to the address on file, verifying that your data has been permanently removed.",
+                        title: "Xác Nhận Hoàn Tất",
+                        desc: "Sau khi xóa xong, chúng tôi sẽ gửi email xác nhận cuối cùng đến địa chỉ đã đăng ký, thông báo rằng dữ liệu của bạn đã được xóa vĩnh viễn.",
                         color: "text-blue-600",
                         bg: "bg-blue-50",
                       },
@@ -224,51 +223,51 @@ export default function DataDeletionPage() {
                 </div>
               </div>
 
-              {/* Facebook-Specific Note */}
+              {/* Đăng nhập qua Facebook */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-facebook-box-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Signed In via Facebook?</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Đã Đăng Nhập Qua Facebook?</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    If you signed in using Facebook Login, we hold only the data you authorised during the
-                    Facebook Login process (name, email, profile picture). Requesting deletion with us will
-                    remove all of this data from our platform.
+                    Nếu bạn đã đăng nhập bằng Facebook Login, chúng tôi chỉ lưu giữ dữ liệu bạn đã cấp
+                    phép trong quá trình đăng nhập (họ tên, email, ảnh đại diện). Gửi yêu cầu xóa đến
+                    chúng tôi sẽ xóa toàn bộ dữ liệu này khỏi nền tảng.
                   </p>
                   <p className="text-gray-700">
-                    To also revoke TheStockHunters' access to your Facebook account, you can remove the app
-                    directly in your Facebook settings:
+                    Để đồng thời thu hồi quyền truy cập của TheStockHunters vào tài khoản Facebook, bạn có
+                    thể xóa ứng dụng trực tiếp trong cài đặt Facebook:
                   </p>
                   <ol className="list-decimal pl-6 space-y-2 text-gray-700">
                     <li>
-                      Go to <strong>Facebook Settings &amp; Privacy → Settings → Apps and Websites</strong>.
+                      Vào <strong>Cài đặt &amp; Quyền riêng tư Facebook → Cài đặt → Ứng dụng và trang web</strong>.
                     </li>
-                    <li>Find <strong>TheStockHunters</strong> in the list of active apps.</li>
-                    <li>Click <strong>Remove</strong> to revoke access.</li>
+                    <li>Tìm <strong>TheStockHunters</strong> trong danh sách ứng dụng đang hoạt động.</li>
+                    <li>Nhấn <strong>Xóa</strong> để thu hồi quyền truy cập.</li>
                   </ol>
                   <p className="text-gray-700">
-                    Revoking access on Facebook stops future data sharing but does not automatically delete
-                    data already held on our servers — please also send us an email deletion request as
-                    described above.
+                    Việc thu hồi quyền truy cập trên Facebook sẽ ngăn chia sẻ dữ liệu trong tương lai
+                    nhưng không tự động xóa dữ liệu đã lưu trên máy chủ của chúng tôi — vui lòng đồng thời
+                    gửi yêu cầu xóa qua email như hướng dẫn ở trên.
                   </p>
                 </div>
               </div>
 
-              {/* Contact */}
+              {/* Liên hệ */}
               <div>
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-contacts-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Questions?</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Có Thắc Mắc?</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    If you have any questions about the data deletion process or your privacy rights, please
-                    reach out to us:
+                    Nếu bạn có bất kỳ câu hỏi nào về quy trình xóa dữ liệu hoặc quyền riêng tư của mình,
+                    vui lòng liên hệ với chúng tôi:
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center">
@@ -295,14 +294,14 @@ export default function DataDeletionPage() {
                       className="inline-flex items-center justify-center border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary/5 transition"
                     >
                       <i className="ri-shield-check-line mr-2"></i>
-                      Privacy Policy
+                      Chính Sách Quyền Riêng Tư
                     </a>
                     <a
                       href="/terms-of-service"
                       className="inline-flex items-center justify-center border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary/5 transition"
                     >
                       <i className="ri-file-list-2-line mr-2"></i>
-                      Terms of Service
+                      Điều Khoản Sử Dụng
                     </a>
                   </div>
                 </div>

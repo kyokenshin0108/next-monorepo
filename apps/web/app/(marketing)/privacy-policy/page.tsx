@@ -3,9 +3,9 @@ import Navbar from "@/components/shared/Navbar"
 import Footer from "@/components/shared/Footer"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - TheStockHunters",
+  title: "Chính Sách Quyền Riêng Tư - TheStockHunters",
   description:
-    "Learn how TheStockHunters collects, uses, and protects your personal data including information obtained through Facebook Login.",
+    "Tìm hiểu cách TheStockHunters thu thập, sử dụng và bảo vệ dữ liệu cá nhân của bạn, bao gồm thông tin được thu thập qua Facebook Login.",
   robots: { index: true, follow: true },
 }
 
@@ -23,58 +23,59 @@ export default function PrivacyPolicyPage() {
                   <i className="ri-shield-check-line text-3xl"></i>
                 </div>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Chính Sách Quyền Riêng Tư</h1>
               <p className="text-gray-600 text-lg mb-4">
-                TheStockHunters is committed to protecting your privacy and personal information.
+                TheStockHunters cam kết bảo vệ quyền riêng tư và thông tin cá nhân của bạn.
               </p>
-              <p className="text-gray-500 text-sm">Last updated: March 21, 2026</p>
+              <p className="text-gray-500 text-sm">Cập nhật lần cuối: 21/03/2026</p>
             </div>
           </div>
         </section>
 
-        {/* Content */}
+        {/* Nội dung */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto space-y-10">
 
-              {/* Introduction */}
+              {/* Giới thiệu */}
               <div className="bg-white p-8 rounded-lg shadow-sm">
                 <p className="text-gray-700 leading-relaxed">
-                  This Privacy Policy describes how TheStockHunters ("we", "us", or "our") collects, uses, and
-                  safeguards your personal information when you use our platform, including when you sign in via
-                  Facebook Login. By using our services, you agree to the practices described in this policy.
+                  Chính Sách Quyền Riêng Tư này mô tả cách TheStockHunters ("chúng tôi") thu thập, sử dụng và
+                  bảo vệ thông tin cá nhân của bạn khi sử dụng nền tảng, bao gồm khi bạn đăng nhập qua
+                  Facebook Login. Bằng việc sử dụng dịch vụ của chúng tôi, bạn đồng ý với các thực hành
+                  được mô tả trong chính sách này.
                 </p>
               </div>
 
-              {/* Data We Collect */}
+              {/* Dữ liệu chúng tôi thu thập */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-information-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Data We Collect</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Dữ Liệu Chúng Tôi Thu Thập</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    When you sign in using Facebook Login, we request and receive only the following information
-                    from your Facebook profile:
+                    Khi bạn đăng nhập bằng Facebook Login, chúng tôi chỉ yêu cầu và nhận các thông tin sau
+                    từ hồ sơ Facebook của bạn:
                   </p>
                   <div className="space-y-4">
                     {[
                       {
                         icon: "ri-user-line",
-                        title: "Full Name",
-                        desc: "Your name as it appears on your Facebook profile, used to personalise your experience on our platform.",
+                        title: "Họ và Tên",
+                        desc: "Tên của bạn như hiển thị trên hồ sơ Facebook, được sử dụng để cá nhân hóa trải nghiệm của bạn trên nền tảng.",
                       },
                       {
                         icon: "ri-mail-line",
-                        title: "Email Address",
-                        desc: "Your email address associated with Facebook, used for account identification, login, and communication.",
+                        title: "Địa Chỉ Email",
+                        desc: "Địa chỉ email liên kết với Facebook, được dùng để xác định tài khoản, đăng nhập và liên lạc.",
                       },
                       {
                         icon: "ri-image-line",
-                        title: "Profile Picture",
-                        desc: "Your Facebook profile picture, displayed as your avatar within the platform.",
+                        title: "Ảnh Đại Diện",
+                        desc: "Ảnh đại diện Facebook của bạn, được hiển thị làm avatar trong nền tảng.",
                       },
                     ].map((item, i) => (
                       <div key={i} className="flex">
@@ -90,46 +91,46 @@ export default function PrivacyPolicyPage() {
                   </div>
                   <div className="mt-6 p-4 bg-primary/5 rounded-lg">
                     <p className="text-gray-700 text-sm">
-                      We do not request access to your Facebook friends list, posts, messages, or any other data
-                      beyond the permissions listed above.
+                      Chúng tôi không yêu cầu quyền truy cập vào danh sách bạn bè, bài đăng, tin nhắn hoặc
+                      bất kỳ dữ liệu nào khác ngoài các quyền được liệt kê ở trên.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* How We Use Data */}
+              {/* Mục đích sử dụng */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-file-list-3-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">How We Use Your Data</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Mục Đích Sử Dụng Dữ Liệu</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    We use the information collected exclusively for the following purposes:
+                    Chúng tôi sử dụng thông tin thu thập được chỉ cho các mục đích sau:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[
                       {
                         icon: "ri-login-box-line",
-                        title: "Authentication",
-                        desc: "To verify your identity and allow secure access to your account on our platform.",
+                        title: "Xác Thực Tài Khoản",
+                        desc: "Xác minh danh tính của bạn và cho phép truy cập an toàn vào tài khoản trên nền tảng.",
                       },
                       {
                         icon: "ri-customer-service-2-line",
-                        title: "Personalisation",
-                        desc: "To display your name and profile picture within the platform for a personalised experience.",
+                        title: "Cá Nhân Hóa",
+                        desc: "Hiển thị tên và ảnh đại diện của bạn trong nền tảng để mang lại trải nghiệm cá nhân hóa.",
                       },
                       {
                         icon: "ri-mail-send-line",
-                        title: "Communication",
-                        desc: "To send important account-related notifications such as login alerts or policy updates.",
+                        title: "Liên Lạc",
+                        desc: "Gửi các thông báo quan trọng liên quan đến tài khoản như cảnh báo đăng nhập hoặc cập nhật chính sách.",
                       },
                       {
                         icon: "ri-shield-check-line",
-                        title: "Security",
-                        desc: "To protect your account, detect fraud, and ensure the security and integrity of our platform.",
+                        title: "Bảo Mật",
+                        desc: "Bảo vệ tài khoản, phát hiện gian lận và đảm bảo tính an toàn và toàn vẹn của nền tảng.",
                       },
                     ].map((item, i) => (
                       <div key={i} className="border border-gray-200 rounded-lg p-6">
@@ -144,104 +145,105 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              {/* Data Storage */}
+              {/* Lưu trữ và bảo mật */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-database-2-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Data Storage &amp; Security</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Lưu Trữ &amp; Bảo Mật Dữ Liệu</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    Your personal data is stored securely in <strong>Supabase</strong>, an enterprise-grade,
-                    SOC 2 Type II compliant database platform. Supabase encrypts data at rest and in transit
-                    using industry-standard TLS/SSL and AES-256 encryption.
+                    Dữ liệu cá nhân của bạn được lưu trữ an toàn trên <strong>Supabase</strong> — nền tảng
+                    cơ sở dữ liệu đạt chuẩn doanh nghiệp, tuân thủ SOC 2 Type II. Supabase mã hóa dữ liệu
+                    khi lưu trữ và truyền tải bằng các tiêu chuẩn TLS/SSL và AES-256.
                   </p>
                   <p className="text-gray-700">
-                    We retain your data only for as long as your account is active or as required by law. Upon
-                    account deletion, your personal data is removed from our systems within 30 days.
+                    Chúng tôi chỉ lưu giữ dữ liệu của bạn trong thời gian tài khoản còn hoạt động hoặc theo
+                    yêu cầu của pháp luật. Sau khi xóa tài khoản, dữ liệu cá nhân của bạn sẽ được xóa khỏi
+                    hệ thống trong vòng 30 ngày.
                   </p>
                   <p className="text-gray-700">
-                    Access to personal data is strictly limited to authorised personnel and is protected by
-                    role-based access controls.
+                    Quyền truy cập vào dữ liệu cá nhân bị giới hạn nghiêm ngặt đối với nhân viên được ủy
+                    quyền và được bảo vệ bằng kiểm soát truy cập theo vai trò.
                   </p>
                 </div>
               </div>
 
-              {/* No Selling / Sharing */}
+              {/* Không bán hoặc chia sẻ */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-forbid-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">We Do Not Sell or Share Your Data</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Chúng Tôi Không Bán Hoặc Chia Sẻ Dữ Liệu</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-4">
-                    We do <strong>not</strong> sell, rent, trade, or otherwise transfer your personal
-                    information to third parties for commercial or marketing purposes.
+                    Chúng tôi <strong>không</strong> bán, cho thuê, trao đổi hoặc chuyển giao thông tin cá
+                    nhân của bạn cho bên thứ ba vì mục đích thương mại hay tiếp thị.
                   </p>
                   <p className="text-gray-700 mb-4">
-                    We do not share your data with advertisers, data brokers, or any other external parties
-                    except in the following limited circumstances:
+                    Chúng tôi không chia sẻ dữ liệu của bạn với các nhà quảng cáo, công ty môi giới dữ liệu
+                    hoặc bất kỳ bên ngoài nào, ngoại trừ các trường hợp hạn chế sau:
                   </p>
                   <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                    <li>When required by applicable law or a valid legal order.</li>
-                    <li>To protect the rights, property, or safety of TheStockHunters, our users, or the public.</li>
+                    <li>Khi được yêu cầu bởi pháp luật hiện hành hoặc lệnh pháp lý hợp lệ.</li>
+                    <li>Để bảo vệ quyền lợi, tài sản hoặc sự an toàn của TheStockHunters, người dùng hoặc cộng đồng.</li>
                     <li>
-                      With trusted service providers who operate under strict confidentiality agreements and
-                      process data solely on our behalf (e.g., Supabase for database hosting).
+                      Với các nhà cung cấp dịch vụ đáng tin cậy hoạt động theo thỏa thuận bảo mật nghiêm ngặt
+                      và chỉ xử lý dữ liệu thay mặt chúng tôi (ví dụ: Supabase để lưu trữ cơ sở dữ liệu).
                     </li>
                   </ul>
                 </div>
               </div>
 
-              {/* User Rights & Data Deletion */}
+              {/* Quyền của người dùng & xóa dữ liệu */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-delete-bin-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Your Rights &amp; Data Deletion</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Quyền Của Bạn &amp; Xóa Dữ Liệu</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    You have the right to access, correct, or delete your personal data at any time.
+                    Bạn có quyền truy cập, chỉnh sửa hoặc xóa dữ liệu cá nhân của mình bất kỳ lúc nào.
                   </p>
                   <p className="text-gray-700">
-                    To request deletion of your account and all associated personal data, please email us at{" "}
+                    Để yêu cầu xóa tài khoản và toàn bộ dữ liệu cá nhân, vui lòng gửi email đến{" "}
                     <a
                       href="mailto:stock.hunter.info@gmail.com?subject=Delete My Account"
                       className="text-primary font-medium hover:underline"
                     >
                       stock.hunter.info@gmail.com
                     </a>{" "}
-                    with the subject line <strong>"Delete My Account"</strong>. We will process your request
-                    and confirm deletion within <strong>30 days</strong>.
+                    với tiêu đề <strong>"Delete My Account"</strong>. Chúng tôi sẽ xử lý yêu cầu và xác
+                    nhận xóa trong vòng <strong>30 ngày</strong>.
                   </p>
                   <p className="text-gray-700">
-                    For a step-by-step guide, see our{" "}
+                    Xem hướng dẫn từng bước tại{" "}
                     <a href="/data-deletion" className="text-primary font-medium hover:underline">
-                      Data Deletion Instructions
+                      Hướng Dẫn Xóa Dữ Liệu
                     </a>
                     .
                   </p>
                 </div>
               </div>
 
-              {/* Contact */}
+              {/* Liên hệ */}
               <div>
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-contacts-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Contact Us</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Liên Hệ</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    If you have any questions, concerns, or requests regarding this Privacy Policy or the
-                    handling of your personal data, please contact us:
+                    Nếu bạn có bất kỳ câu hỏi, thắc mắc hoặc yêu cầu nào liên quan đến Chính Sách Quyền
+                    Riêng Tư này hoặc cách chúng tôi xử lý dữ liệu cá nhân của bạn, vui lòng liên hệ:
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center">
@@ -264,8 +266,8 @@ export default function PrivacyPolicyPage() {
                   </div>
                   <div className="mt-6 p-4 bg-primary/5 rounded-lg">
                     <p className="text-gray-600 text-sm">
-                      We aim to respond to all privacy-related inquiries within <strong>30 days</strong> of
-                      receipt.
+                      Chúng tôi sẽ phản hồi mọi yêu cầu liên quan đến quyền riêng tư trong vòng{" "}
+                      <strong>30 ngày</strong> kể từ khi nhận được.
                     </p>
                   </div>
                 </div>

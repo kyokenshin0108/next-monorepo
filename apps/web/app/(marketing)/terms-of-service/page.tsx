@@ -3,9 +3,9 @@ import Navbar from "@/components/shared/Navbar"
 import Footer from "@/components/shared/Footer"
 
 export const metadata: Metadata = {
-  title: "Terms of Service - TheStockHunters",
+  title: "Điều Khoản Sử Dụng - TheStockHunters",
   description:
-    "Read the Terms of Service for TheStockHunters — a stock market analysis and live streaming platform. Understand your rights, responsibilities, and our disclaimers.",
+    "Đọc Điều Khoản Sử Dụng của TheStockHunters — nền tảng phân tích thị trường chứng khoán và phát trực tiếp. Tìm hiểu quyền lợi, trách nhiệm và các tuyên bố miễn trừ.",
   robots: { index: true, follow: true },
 }
 
@@ -23,87 +23,87 @@ export default function TermsOfServicePage() {
                   <i className="ri-file-list-2-line text-3xl"></i>
                 </div>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Điều Khoản Sử Dụng</h1>
               <p className="text-gray-600 text-lg mb-4">
-                Please read these terms carefully before using TheStockHunters platform.
+                Vui lòng đọc kỹ các điều khoản này trước khi sử dụng nền tảng TheStockHunters.
               </p>
-              <p className="text-gray-500 text-sm">Effective date: March 21, 2026</p>
+              <p className="text-gray-500 text-sm">Ngày có hiệu lực: 21/03/2026</p>
             </div>
           </div>
         </section>
 
-        {/* Content */}
+        {/* Nội dung */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto space-y-10">
 
-              {/* Introduction */}
+              {/* Giới thiệu */}
               <div className="bg-white p-8 rounded-lg shadow-sm">
                 <p className="text-gray-700 leading-relaxed">
-                  These Terms of Service ("Terms") govern your access to and use of the TheStockHunters
-                  website and services (collectively, the "Service"), operated by TheStockHunters ("we", "us",
-                  or "our"). By accessing or using our Service, you confirm that you have read, understood, and
-                  agree to be bound by these Terms. If you do not agree, please do not use our Service.
+                  Điều Khoản Sử Dụng này ("Điều Khoản") điều chỉnh việc bạn truy cập và sử dụng trang web
+                  cùng các dịch vụ của TheStockHunters (gọi chung là "Dịch Vụ"), được vận hành bởi
+                  TheStockHunters ("chúng tôi"). Bằng việc truy cập hoặc sử dụng Dịch Vụ, bạn xác nhận đã
+                  đọc, hiểu và đồng ý tuân theo các Điều Khoản này. Nếu bạn không đồng ý, vui lòng không
+                  sử dụng Dịch Vụ của chúng tôi.
                 </p>
               </div>
 
-              {/* Service Description */}
+              {/* Mô tả dịch vụ */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-bar-chart-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Service Description</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Mô Tả Dịch Vụ</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    TheStockHunters is a <strong>stock market analysis and live streaming platform</strong> that
-                    provides:
+                    TheStockHunters là <strong>nền tảng phân tích thị trường chứng khoán và phát trực tiếp</strong> cung cấp:
                   </p>
                   <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                    <li>Real-time and historical stock market data and analysis.</li>
-                    <li>Live streaming sessions featuring market commentary and discussion.</li>
-                    <li>Educational content covering investment concepts and strategies.</li>
-                    <li>Community features enabling users to discuss market developments.</li>
-                    <li>Expert insights and market outlook articles.</li>
+                    <li>Dữ liệu và phân tích thị trường chứng khoán theo thời gian thực và lịch sử.</li>
+                    <li>Các buổi phát trực tiếp với bình luận và thảo luận về thị trường.</li>
+                    <li>Nội dung giáo dục về các khái niệm và chiến lược đầu tư.</li>
+                    <li>Tính năng cộng đồng cho phép người dùng thảo luận về diễn biến thị trường.</li>
+                    <li>Bài viết nhận định chuyên gia và triển vọng thị trường.</li>
                   </ul>
                   <p className="text-gray-700">
-                    We reserve the right to modify, suspend, or discontinue any part of the Service at any
-                    time with reasonable notice.
+                    Chúng tôi có quyền sửa đổi, tạm ngừng hoặc chấm dứt bất kỳ phần nào của Dịch Vụ vào
+                    bất kỳ lúc nào với thông báo hợp lý.
                   </p>
                 </div>
               </div>
 
-              {/* User Responsibilities */}
+              {/* Trách nhiệm người dùng */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-user-settings-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">User Responsibilities</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Trách Nhiệm Người Dùng</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <div className="space-y-6">
                     {[
                       {
                         icon: "ri-calendar-check-line",
-                        title: "Age Requirement",
-                        desc: "You must be at least 18 years of age to use our Service. By accessing the platform, you represent and warrant that you meet this requirement.",
+                        title: "Yêu Cầu Độ Tuổi",
+                        desc: "Bạn phải đủ 18 tuổi trở lên để sử dụng Dịch Vụ của chúng tôi. Bằng cách truy cập nền tảng, bạn xác nhận và đảm bảo rằng bạn đáp ứng yêu cầu này.",
                       },
                       {
                         icon: "ri-id-card-line",
-                        title: "Accurate Information",
-                        desc: "You agree to provide accurate, current, and complete information when creating your account and to keep your information up to date. Providing false or misleading information may result in account termination.",
+                        title: "Thông Tin Chính Xác",
+                        desc: "Bạn đồng ý cung cấp thông tin chính xác, đầy đủ và cập nhật khi tạo tài khoản. Việc cung cấp thông tin sai lệch có thể dẫn đến chấm dứt tài khoản.",
                       },
                       {
                         icon: "ri-lock-password-line",
-                        title: "Account Security",
-                        desc: "You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately at stock.hunter.info@gmail.com if you suspect unauthorised access.",
+                        title: "Bảo Mật Tài Khoản",
+                        desc: "Bạn có trách nhiệm bảo mật thông tin đăng nhập và chịu trách nhiệm về mọi hoạt động diễn ra dưới tài khoản của mình. Thông báo ngay cho chúng tôi tại stock.hunter.info@gmail.com nếu bạn nghi ngờ có truy cập trái phép.",
                       },
                       {
                         icon: "ri-thumb-up-line",
-                        title: "Acceptable Use",
-                        desc: "You agree not to use the Service for any unlawful purpose, to harass or harm other users, to distribute spam or malware, to manipulate market information, or to engage in any activity that disrupts the integrity of our platform.",
+                        title: "Sử Dụng Hợp Lệ",
+                        desc: "Bạn đồng ý không sử dụng Dịch Vụ cho bất kỳ mục đích bất hợp pháp nào, không quấy rối người dùng khác, không phát tán thư rác hoặc phần mềm độc hại, không thao túng thông tin thị trường hoặc thực hiện bất kỳ hoạt động nào gây tổn hại đến tính toàn vẹn của nền tảng.",
                       },
                     ].map((item, i) => (
                       <div key={i} className="flex">
@@ -120,140 +120,142 @@ export default function TermsOfServicePage() {
                 </div>
               </div>
 
-              {/* Financial Disclaimer */}
+              {/* Tuyên bố miễn trừ tài chính */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-error-warning-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Content Disclaimer — Not Financial Advice</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Tuyên Bố Miễn Trừ — Không Phải Tư Vấn Tài Chính</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <div className="p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded-r-lg">
                     <p className="text-gray-800 font-semibold">
-                      All content on TheStockHunters is provided for informational and educational purposes
-                      only. It does not constitute financial, investment, legal, or tax advice.
+                      Toàn bộ nội dung trên TheStockHunters chỉ được cung cấp cho mục đích thông tin và
+                      giáo dục. Đây không phải là tư vấn tài chính, đầu tư, pháp lý hay thuế.
                     </p>
                   </div>
                   <p className="text-gray-700">
-                    Market analysis, live commentary, articles, and any other content published on our
-                    platform reflect the opinions of the authors and should not be relied upon as a basis for
-                    making investment decisions.
+                    Các phân tích thị trường, bình luận phát trực tiếp, bài viết và mọi nội dung khác được
+                    đăng tải trên nền tảng phản ánh quan điểm của tác giả và không nên được dùng làm cơ sở
+                    để ra quyết định đầu tư.
                   </p>
                   <p className="text-gray-700">
-                    Investing in financial markets involves significant risk, including the possible loss of
-                    principal. Past performance is not indicative of future results. You should consult a
-                    qualified and licensed financial adviser before making any investment decisions.
+                    Đầu tư vào thị trường tài chính tiềm ẩn rủi ro đáng kể, bao gồm khả năng mất vốn. Kết
+                    quả trong quá khứ không đảm bảo cho kết quả trong tương lai. Bạn nên tham khảo ý kiến
+                    của chuyên gia tư vấn tài chính có chứng chỉ trước khi đưa ra bất kỳ quyết định đầu tư nào.
                   </p>
                   <p className="text-gray-700">
-                    TheStockHunters is not a registered investment adviser, broker-dealer, or financial
-                    institution and does not hold any securities licences.
+                    TheStockHunters không phải là công ty tư vấn đầu tư, môi giới chứng khoán hay tổ chức
+                    tài chính đã đăng ký và không nắm giữ bất kỳ giấy phép chứng khoán nào.
                   </p>
                 </div>
               </div>
 
-              {/* Liability Limitations */}
+              {/* Giới hạn trách nhiệm */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-scales-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Limitation of Liability</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Giới Hạn Trách Nhiệm</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    To the fullest extent permitted by applicable law, TheStockHunters and its officers,
-                    directors, employees, and agents shall not be liable for:
+                    Trong phạm vi tối đa được pháp luật hiện hành cho phép, TheStockHunters và các cán bộ,
+                    giám đốc, nhân viên và đại lý của chúng tôi sẽ không chịu trách nhiệm đối với:
                   </p>
                   <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                    <li>Any indirect, incidental, special, consequential, or punitive damages.</li>
+                    <li>Bất kỳ thiệt hại gián tiếp, ngẫu nhiên, đặc biệt, hậu quả hoặc trừng phạt nào.</li>
                     <li>
-                      Any loss of profits, revenue, data, goodwill, or other intangible losses arising from
-                      your use of or inability to use the Service.
+                      Bất kỳ tổn thất lợi nhuận, doanh thu, dữ liệu, uy tín hay tổn thất vô hình nào phát
+                      sinh từ việc sử dụng hoặc không thể sử dụng Dịch Vụ.
                     </li>
                     <li>
-                      Any investment losses or financial decisions made based on content published on our
-                      platform.
+                      Bất kỳ tổn thất đầu tư hay quyết định tài chính nào được đưa ra dựa trên nội dung
+                      đăng tải trên nền tảng.
                     </li>
                     <li>
-                      Unauthorised access to or alteration of your transmissions or data by third parties.
+                      Việc bên thứ ba truy cập trái phép hoặc thay đổi dữ liệu hay nội dung truyền tải của bạn.
                     </li>
                     <li>
-                      Any interruption, suspension, or termination of the Service, whether or not caused by
-                      our actions.
+                      Bất kỳ sự gián đoạn, tạm ngừng hoặc chấm dứt Dịch Vụ, dù có hay không do hành động
+                      của chúng tôi gây ra.
                     </li>
                   </ul>
                   <p className="text-gray-700">
-                    In jurisdictions where limitation of liability is not fully permitted, our liability shall
-                    be limited to the maximum extent allowed by law.
+                    Tại các khu vực pháp lý không cho phép giới hạn hoàn toàn trách nhiệm, trách nhiệm của
+                    chúng tôi sẽ được giới hạn ở mức tối đa mà pháp luật cho phép.
                   </p>
                 </div>
               </div>
 
-              {/* Account Termination */}
+              {/* Chấm dứt tài khoản */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-close-circle-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Account Termination</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Chấm Dứt Tài Khoản</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
                   <p className="text-gray-700">
-                    <strong>You may terminate your account</strong> at any time by contacting us at{" "}
+                    <strong>Bạn có thể chấm dứt tài khoản</strong> bất kỳ lúc nào bằng cách liên hệ với
+                    chúng tôi tại{" "}
                     <a
                       href="mailto:stock.hunter.info@gmail.com?subject=Delete My Account"
                       className="text-primary font-medium hover:underline"
                     >
                       stock.hunter.info@gmail.com
                     </a>
-                    . Upon termination, your personal data will be deleted in accordance with our{" "}
+                    . Sau khi chấm dứt, dữ liệu cá nhân của bạn sẽ được xóa theo{" "}
                     <a href="/privacy-policy" className="text-primary font-medium hover:underline">
-                      Privacy Policy
-                    </a>
-                    .
+                      Chính Sách Quyền Riêng Tư
+                    </a>{" "}
+                    của chúng tôi.
                   </p>
                   <p className="text-gray-700">
-                    <strong>We reserve the right to suspend or terminate</strong> your account at our
-                    discretion, with or without prior notice, if we determine that you have violated these
-                    Terms, engaged in fraudulent activity, or caused harm to other users or the platform.
+                    <strong>Chúng tôi có quyền đình chỉ hoặc chấm dứt</strong> tài khoản của bạn theo quyết
+                    định của chúng tôi, có hoặc không có thông báo trước, nếu chúng tôi xác định bạn đã vi
+                    phạm Điều Khoản này, tham gia hoạt động gian lận hoặc gây hại cho người dùng khác hay
+                    nền tảng.
                   </p>
                   <p className="text-gray-700">
-                    Termination of your account does not release you from any obligations or liabilities
-                    incurred prior to the termination date.
+                    Việc chấm dứt tài khoản không miễn trừ bạn khỏi bất kỳ nghĩa vụ hoặc trách nhiệm nào
+                    phát sinh trước ngày chấm dứt.
                   </p>
                 </div>
               </div>
 
-              {/* Changes to Terms */}
+              {/* Thay đổi điều khoản */}
               <div className="pb-8 border-b-2 border-primary/20">
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-refresh-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Changes to These Terms</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Thay Đổi Điều Khoản</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700">
-                    We may update these Terms from time to time. When we make material changes, we will update
-                    the effective date at the top of this page and notify you via email or a prominent notice
-                    on our platform. Your continued use of the Service after changes take effect constitutes
-                    your acceptance of the revised Terms.
+                    Chúng tôi có thể cập nhật các Điều Khoản này theo thời gian. Khi có thay đổi quan trọng,
+                    chúng tôi sẽ cập nhật ngày có hiệu lực ở đầu trang này và thông báo cho bạn qua email
+                    hoặc thông báo nổi bật trên nền tảng. Việc bạn tiếp tục sử dụng Dịch Vụ sau khi thay
+                    đổi có hiệu lực đồng nghĩa với việc bạn chấp nhận các Điều Khoản đã được sửa đổi.
                   </p>
                 </div>
               </div>
 
-              {/* Contact */}
+              {/* Liên hệ */}
               <div>
                 <div className="flex items-center mb-6">
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
                     <i className="ri-contacts-line text-xl"></i>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Contact Us</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Liên Hệ</h2>
                 </div>
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <p className="text-gray-700 mb-6">
-                    If you have any questions about these Terms of Service, please contact us:
+                    Nếu bạn có bất kỳ câu hỏi nào về Điều Khoản Sử Dụng này, vui lòng liên hệ với chúng tôi:
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center">
