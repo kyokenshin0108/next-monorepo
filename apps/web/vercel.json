@@ -6,7 +6,7 @@
   "crons": [
     {
       "path": "/api/aggregator/rss",
-      "schedule": "0 * * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/fetch-news",
@@ -22,7 +22,7 @@
     },
     {
       "path": "/api/cron/fetch-reports",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
