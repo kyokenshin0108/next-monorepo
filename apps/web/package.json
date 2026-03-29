@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2",
+    "@supabase/supabase-js": "^2.100.1",
     "@workspace/ui": "*",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
