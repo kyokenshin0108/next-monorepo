@@ -194,6 +194,14 @@ async function scrapeFinpath(): Promise<ScrapedReport[]> {
 // ── route handler ──────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
+  // Disable in production until Chromium setup complete
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+    return Response.json(
+      { message: "Scraper temporarily disabled in production", status: "maintenance" },
+      { status: 503 }
+    )
+  }
+
   const cronSecret = process.env.CRON_SECRET
   if (cronSecret) {
     const auth = req.headers.get("authorization")

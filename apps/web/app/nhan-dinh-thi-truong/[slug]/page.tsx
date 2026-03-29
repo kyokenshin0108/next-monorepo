@@ -111,6 +111,43 @@ export default async function ReportDetailPage({ params }: Props) {
     ? report.content.split("\n\n").filter(Boolean)
     : []
 
+  function renderBlock(block: string, i: number) {
+    if (block.startsWith("## ")) {
+      return (
+        <h2 key={i} className="text-xl font-bold text-gray-900 mt-8 mb-3 flex items-center gap-2">
+          <span className="w-1 h-5 bg-primary rounded-full inline-block flex-shrink-0" />
+          {block.slice(3)}
+        </h2>
+      )
+    }
+    if (block.startsWith("### ")) {
+      return (
+        <h3 key={i} className="text-base font-semibold text-gray-800 mt-6 mb-2">
+          {block.slice(4)}
+        </h3>
+      )
+    }
+    const lines = block.split("\n").filter(Boolean)
+    const isBulletList = lines.length > 1 && lines.every((l) => l.startsWith("- ") || l.startsWith("* "))
+    if (isBulletList) {
+      return (
+        <ul key={i} className="space-y-2 mb-4">
+          {lines.map((l, j) => (
+            <li key={j} className="flex items-start gap-2 text-gray-700 text-sm leading-relaxed">
+              <i className="ri-arrow-right-s-line text-primary mt-0.5 flex-shrink-0" />
+              {l.slice(2)}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    return (
+      <p key={i} className="text-gray-800 leading-relaxed mb-4">
+        {block}
+      </p>
+    )
+  }
+
   return (
     <>
       <Navbar />
@@ -234,9 +271,7 @@ export default async function ReportDetailPage({ params }: Props) {
                   {/* Full content */}
                   {contentBlocks.length > 0 ? (
                     <div className="prose prose-lg max-w-none">
-                      {contentBlocks.map((block, i) => (
-                        <p key={i} className="text-gray-800 leading-relaxed mb-4">{block}</p>
-                      ))}
+                      {contentBlocks.map((block, i) => renderBlock(block, i))}
                     </div>
                   ) : (report.source_url || report.report_pdf_url) ? (
                     <div className="bg-blue-50 rounded-xl p-6 text-center">
